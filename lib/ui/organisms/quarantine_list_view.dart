@@ -4,7 +4,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/models/quarantine.dart';
 import '../atoms/app_button.dart';
-import '../atoms/app_spinner.dart';
+import '../atoms/app_skeleton.dart';
 import '../atoms/app_text.dart';
 import '../molecules/empty_state.dart';
 import '../molecules/error_banner.dart';
@@ -44,16 +44,14 @@ class _QuarantineListViewState extends State<QuarantineListView> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Quarantine> active =
-        widget.quarantines.where((Quarantine q) => q.isActive).toList();
+    final List<Quarantine> active = widget.quarantines
+        .where((Quarantine q) => q.isActive)
+        .toList();
     final List<Quarantine> rows = _filtered;
 
     final Widget body;
     if (widget.loading && widget.quarantines.isEmpty) {
-      body = const Padding(
-        padding: EdgeInsets.all(AppSpacing.xxl),
-        child: Center(child: AppSpinner()),
-      );
+      body = const SkeletonList();
     } else if (widget.error != null && widget.quarantines.isEmpty) {
       body = ErrorBanner(message: widget.error!);
     } else if (rows.isEmpty) {
@@ -102,8 +100,11 @@ class _QuarantineListViewState extends State<QuarantineListView> {
               ),
               child: Row(
                 children: <Widget>[
-                  const Icon(Icons.warning_amber_rounded,
-                      color: AppColors.danger, size: 18),
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    color: AppColors.danger,
+                    size: 18,
+                  ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: AppText(

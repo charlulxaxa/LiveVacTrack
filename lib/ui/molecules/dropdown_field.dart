@@ -68,6 +68,23 @@ class DropdownField<T> extends StatelessWidget {
           key: ValueKey<T?>(value),
           initialValue: value,
           isExpanded: true,
+          // Flutter fixes menu rows at 48 px by default, which a label plus
+          // subtitle (or large system text) overflows. Null sizes each row to
+          // its content, still at least 48 px.
+          itemHeight: null,
+          // The closed field is one line tall: show only the label there.
+          // The subtitle is still shown in the open menu.
+          selectedItemBuilder: (BuildContext context) => items
+              .map((DropdownOption<T> option) => Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: AppText(
+                      option.label,
+                      variant: AppTextVariant.body,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ))
+              .toList(),
           hint: AppText(hint, variant: AppTextVariant.body),
           validator: validator,
           onChanged: enabled ? onChanged : null,

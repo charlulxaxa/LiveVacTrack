@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../data/models/verification.dart';
-import '../atoms/app_spinner.dart';
+import '../atoms/app_skeleton.dart';
 import '../molecules/empty_state.dart';
 import '../molecules/error_banner.dart';
 import '../molecules/verification_tile.dart';
@@ -24,10 +24,7 @@ class VerificationHistoryView extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget body;
     if (loading && verifications.isEmpty) {
-      body = const Padding(
-        padding: EdgeInsets.all(AppSpacing.xxl),
-        child: Center(child: AppSpinner()),
-      );
+      body = const SkeletonList();
     } else if (error != null && verifications.isEmpty) {
       body = ErrorBanner(message: error!);
     } else if (verifications.isEmpty) {

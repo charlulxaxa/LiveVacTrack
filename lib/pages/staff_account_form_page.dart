@@ -28,6 +28,23 @@ class StaffAccountFormPage extends ConsumerWidget {
                 areaId: areaId,
                 areaName: areaName,
               );
+          if (!context.mounted) return;
+          await showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) => AlertDialog(
+              icon: const Icon(Icons.check_circle, color: Colors.green, size: 48),
+              title: const Text('Account created'),
+              content: Text('The account for $displayName was successfully created.'),
+              actions: [
+                FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+          if (context.mounted) Navigator.of(context).pop();
         },
       ),
     );

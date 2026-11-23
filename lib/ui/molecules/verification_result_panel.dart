@@ -11,16 +11,28 @@ import '../atoms/app_text.dart';
 import '../status_styles.dart';
 
 class VerificationResultPanel extends StatelessWidget {
-  const VerificationResultPanel({required this.outcome, super.key});
+  const VerificationResultPanel({
+    required this.outcome,
+    super.key,
+    this.showHeader = true,
+  });
 
   final VerificationOutcome outcome;
+
+  /// Hide the coloured result header when the screen already shows the
+  /// result prominently (the verify page's banner).
+  final bool showHeader;
+
+  String get _caption => outcome.result == ScanResult.valid
+      ? 'Permit verified'
+      : 'Do not accept until resolved';
 
   @override
   Widget build(BuildContext context) {
     final Color color = scanColor(outcome.result);
     final Permit? permit = outcome.permit;
 
-    return Container(
+    final Widget panel = Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -31,41 +43,41 @@ class VerificationResultPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          if (showHeader) ...<Widget>[
+            Row(
+              children: <Widget>[
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  ),
+                  child: Icon(scanIcon(outcome.result), color: Colors.white),
                 ),
-                child: Icon(scanIcon(outcome.result), color: Colors.white),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    AppText(
-                      outcome.result.label,
-                      variant: AppTextVariant.headline,
-                      color: color,
-                      fontWeight: FontWeight.w800,
-                    ),
-                    AppText(
-                      outcome.result == ScanResult.valid
-                          ? 'Permit verified'
-                          : 'Do not accept until resolved',
-                      variant: AppTextVariant.caption,
-                      color: color,
-                    ),
-                  ],
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      AppText(
+                        outcome.result.label,
+                        variant: AppTextVariant.headline,
+                        color: color,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      AppText(
+                        _caption,
+                        variant: AppTextVariant.caption,
+                        color: color,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
           AppText(
             outcome.message,
             variant: AppTextVariant.body,
@@ -113,6 +125,15 @@ class VerificationResultPanel extends StatelessWidget {
           ),
         ],
       ),
+    );
+
+    if (!showHeader) return panel;
+    // Announce the result to screen readers as soon as it appears.
+    return Semantics(
+      liveRegion: true,
+      container: true,
+      label: '${outcome.result.label}. $_caption.',
+      child: panel,
     );
   }
 

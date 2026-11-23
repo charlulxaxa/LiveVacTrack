@@ -16,11 +16,7 @@ import '../molecules/section_header.dart';
 import '../status_styles.dart';
 
 class PermitDetailView extends StatelessWidget {
-  const PermitDetailView({
-    required this.permit,
-    super.key,
-    this.animal,
-  });
+  const PermitDetailView({required this.permit, super.key, this.animal});
 
   final Permit permit;
   final Animal? animal;
@@ -59,9 +55,7 @@ class PermitDetailView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.xl),
-        Center(
-          child: AppQrView(data: payload, size: 220),
-        ),
+        Center(child: AppQrView(data: payload, size: 220)),
         const SizedBox(height: AppSpacing.md),
         Center(
           child: AppText(
@@ -203,24 +197,21 @@ class PermitDetailView extends StatelessWidget {
     switch (permit.effectiveStatus()) {
       case PermitStatus.issued:
         return const PermitStatusView(
-          message:
-              'This permit is valid. The checkpoint will verify the signature online.',
+          message: 'This permit is valid. The checkpoint will verify the signature online.',
           color: AppColors.success,
           softColor: AppColors.successSoft,
           icon: Icons.verified_rounded,
         );
       case PermitStatus.revoked:
         return const PermitStatusView(
-          message:
-              'This permit was revoked. Do not allow movement; ask the checkpoint to scan it.',
+          message: 'This permit was revoked. Do not allow movement; ask the checkpoint to scan it.',
           color: AppColors.danger,
           softColor: AppColors.dangerSoft,
           icon: Icons.block_rounded,
         );
       case PermitStatus.expired:
         return const PermitStatusView(
-          message:
-              'This permit is past its valid-until date. A new permit is required.',
+          message: 'This permit is past its valid-until date. A new permit is required.',
           color: AppColors.warning,
           softColor: AppColors.warningSoft,
           icon: Icons.schedule_rounded,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../atoms/app_skeleton.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/models/staff_member.dart';
@@ -84,10 +85,7 @@ class StaffAccountView extends StatelessWidget {
         if (error != null)
           ErrorBanner(message: error!, onRetry: onRetry)
         else if (loading && staff.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(AppSpacing.xl),
-            child: Center(child: AppSpinner()),
-          )
+          const SkeletonList()
         else if (staff.isEmpty)
           AppText(
             'No staff accounts yet.',
@@ -154,43 +152,47 @@ class _StaffTile extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                AppText(
-                  member.displayName,
-                  variant: AppTextVariant.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (details.isNotEmpty) ...<Widget>[
-                  const SizedBox(height: 2),
+            // The name, details and badges read as one item; the menu
+            // button next to it stays separately focusable.
+            child: MergeSemantics(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
                   AppText(
-                    details,
-                    variant: AppTextVariant.caption,
+                    member.displayName,
+                    variant: AppTextVariant.label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ],
-                const SizedBox(height: AppSpacing.xs),
-                Wrap(
-                  spacing: AppSpacing.xs,
-                  runSpacing: AppSpacing.xs,
-                  children: <Widget>[
-                    AppBadge(
-                      label: member.role.shortLabel,
-                      tone: BadgeTone.info,
-                      dense: true,
+                  if (details.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: 2),
+                    AppText(
+                      details,
+                      variant: AppTextVariant.caption,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    if (member.disabled)
-                      const AppBadge(
-                        label: 'Deactivated',
-                        tone: BadgeTone.danger,
+                  ],
+                  const SizedBox(height: AppSpacing.xs),
+                  Wrap(
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children: <Widget>[
+                      AppBadge(
+                        label: member.role.shortLabel,
+                        tone: BadgeTone.info,
                         dense: true,
                       ),
-                  ],
-                ),
-              ],
+                      if (member.disabled)
+                        const AppBadge(
+                          label: 'Deactivated',
+                          tone: BadgeTone.danger,
+                          dense: true,
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
           if (busy)
@@ -205,39 +207,39 @@ class _StaffTile extends StatelessWidget {
               onSelected: onAction,
               itemBuilder: (BuildContext context) =>
                   <PopupMenuEntry<StaffAction>>[
-                const PopupMenuItem<StaffAction>(
-                  value: StaffAction.resetPassword,
-                  child: _MenuRow(
-                    icon: Icons.lock_reset_rounded,
-                    label: 'Reset password',
-                  ),
-                ),
-                if (member.disabled)
-                  const PopupMenuItem<StaffAction>(
-                    value: StaffAction.reactivate,
-                    child: _MenuRow(
-                      icon: Icons.check_circle_outline_rounded,
-                      label: 'Reactivate',
+                    const PopupMenuItem<StaffAction>(
+                      value: StaffAction.resetPassword,
+                      child: _MenuRow(
+                        icon: Icons.lock_reset_rounded,
+                        label: 'Reset password',
+                      ),
                     ),
-                  )
-                else
-                  const PopupMenuItem<StaffAction>(
-                    value: StaffAction.deactivate,
-                    child: _MenuRow(
-                      icon: Icons.block_rounded,
-                      label: 'Deactivate',
+                    if (member.disabled)
+                      const PopupMenuItem<StaffAction>(
+                        value: StaffAction.reactivate,
+                        child: _MenuRow(
+                          icon: Icons.check_circle_outline_rounded,
+                          label: 'Reactivate',
+                        ),
+                      )
+                    else
+                      const PopupMenuItem<StaffAction>(
+                        value: StaffAction.deactivate,
+                        child: _MenuRow(
+                          icon: Icons.block_rounded,
+                          label: 'Deactivate',
+                        ),
+                      ),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem<StaffAction>(
+                      value: StaffAction.remove,
+                      child: _MenuRow(
+                        icon: Icons.delete_outline_rounded,
+                        label: 'Remove account',
+                        color: AppColors.danger,
+                      ),
                     ),
-                  ),
-                const PopupMenuDivider(),
-                const PopupMenuItem<StaffAction>(
-                  value: StaffAction.remove,
-                  child: _MenuRow(
-                    icon: Icons.delete_outline_rounded,
-                    label: 'Remove account',
-                    color: AppColors.danger,
-                  ),
-                ),
-              ],
+                  ],
             ),
         ],
       ),

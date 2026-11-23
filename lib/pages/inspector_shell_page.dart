@@ -16,6 +16,7 @@ import '../ui/organisms/profile_view.dart';
 import '../ui/organisms/quarantine_list_view.dart';
 import '../ui/organisms/verification_history_view.dart';
 import 'page_helpers.dart';
+import 'permit_verify_page.dart';
 
 class InspectorShellPage extends ConsumerWidget {
   const InspectorShellPage({required this.user, super.key});
@@ -25,13 +26,14 @@ class InspectorShellPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<Permit>> permitsAsync = ref.watch(permitsProvider);
-    final AsyncValue<List<Verification>> historyAsync =
-        ref.watch(verificationsProvider(user.id));
-    final AsyncValue<List<Quarantine>> quarantinesAsync =
-        ref.watch(quarantinesProvider);
+    final AsyncValue<List<Verification>> historyAsync = ref.watch(
+      verificationsProvider(user.id),
+    );
+    final AsyncValue<List<Quarantine>> quarantinesAsync = ref.watch(
+      quarantinesProvider,
+    );
     final List<Permit> permits = permitsAsync.value ?? <Permit>[];
-    final List<Verification> history =
-        historyAsync.value ?? <Verification>[];
+    final List<Verification> history = historyAsync.value ?? <Verification>[];
     final List<Quarantine> quarantines =
         quarantinesAsync.value ?? <Quarantine>[];
     final bool offline = ref.watch(isOfflineProvider);
@@ -49,25 +51,44 @@ class InspectorShellPage extends ConsumerWidget {
             offline: offline,
             lastSynced: lastSynced,
             demoPermits: permits,
-            onVerify: ({
-              required String permitId,
-              required String signedCode,
-              required String checkpointName,
-            }) async {
-              final VerificationOutcome outcome = await ref
-                  .read(permitRepositoryProvider)
-                  .verifyPermit(
-                    permitId: permitId,
-                    signedCode: signedCode,
-                    checkpointName: checkpointName,
-                    inspector: user,
-                    offline: offline,
+            onOpenVerification:
+                ({
+                  required String permitId,
+                  required String signedCode,
+                  required String checkpointName,
+                }) {
+                  return Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => PermitVerifyPage(
+                        permitId: permitId,
+                        signedCode: signedCode,
+                        checkpointName: checkpointName,
+                        onVerify:
+                            ({
+                              required String permitId,
+                              required String signedCode,
+                              required String checkpointName,
+                            }) async {
+                              final VerificationOutcome outcome = await ref
+                                  .read(permitRepositoryProvider)
+                                  .verifyPermit(
+                                    permitId: permitId,
+                                    signedCode: signedCode,
+                                    checkpointName: checkpointName,
+                                    inspector: user,
+                                    // Read at verify time, not when the scan screen
+                                    // was last built.
+                                    offline: ref.read(isOfflineProvider),
+                                  );
+                              if (!outcome.offline) {
+                                ref.read(lastSyncedProvider.notifier).markNow();
+                              }
+                              return outcome;
+                            },
+                      ),
+                    ),
                   );
-              if (!outcome.offline) {
-                ref.read(lastSyncedProvider.notifier).markNow();
-              }
-              return outcome;
-            },
+                },
           ),
         ),
         ShellTab(

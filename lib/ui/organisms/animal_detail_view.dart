@@ -51,19 +51,25 @@ class AnimalDetailView extends StatelessWidget {
                       height: 54,
                       decoration: BoxDecoration(
                         color: AppColors.successSoft,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
-                      child: const Icon(Icons.pets_rounded,
-                          color: AppColors.primary, size: 26),
+                      child: const Icon(
+                        Icons.pets_rounded,
+                        color: AppColors.primary,
+                        size: 26,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          AppText(animal.tagNo,
-                              variant: AppTextVariant.headline),
+                          AppText(
+                            animal.tagNo,
+                            variant: AppTextVariant.headline,
+                          ),
                           AppText(
                             '${animal.species} · ${animal.breed}',
                             variant: AppTextVariant.caption,
@@ -102,13 +108,17 @@ class AnimalDetailView extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.dangerSoft,
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              border:
-                  Border.all(color: AppColors.danger.withValues(alpha: 0.25)),
+              border: Border.all(
+                color: AppColors.danger.withValues(alpha: 0.25),
+              ),
             ),
             child: Row(
               children: <Widget>[
-                const Icon(Icons.warning_amber_rounded,
-                    color: AppColors.danger, size: 18),
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  color: AppColors.danger,
+                  size: 18,
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: AppText(
@@ -215,16 +225,22 @@ class _VaccinationCard extends StatelessWidget {
             const SizedBox(height: 6),
             Row(
               children: <Widget>[
-                const Icon(Icons.event_available_rounded,
-                    size: 14, color: AppColors.inkMuted),
+                const Icon(
+                  Icons.event_available_rounded,
+                  size: 14,
+                  color: AppColors.inkMuted,
+                ),
                 const SizedBox(width: 4),
                 AppText(
                   'Given ${formatDate(vaccination.dateGiven)}',
                   variant: AppTextVariant.caption,
                 ),
                 const SizedBox(width: AppSpacing.md),
-                const Icon(Icons.event_busy_rounded,
-                    size: 14, color: AppColors.inkMuted),
+                const Icon(
+                  Icons.event_busy_rounded,
+                  size: 14,
+                  color: AppColors.inkMuted,
+                ),
                 const SizedBox(width: 4),
                 AppText(
                   'Until ${formatDate(vaccination.validUntil)}',

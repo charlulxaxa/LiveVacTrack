@@ -56,13 +56,15 @@ class ProfileView extends StatelessWidget {
                         spacing: AppSpacing.sm,
                         runSpacing: AppSpacing.sm,
                         children: <Widget>[
-                          AppBadge(
-                            label: demoMode ? 'Demo mode' : 'Live Firebase',
-                            tone: demoMode ? BadgeTone.info : BadgeTone.success,
-                          ),
+                          if (demoMode)
+                            const AppBadge(
+                              label: 'Demo mode',
+                              tone: BadgeTone.info,
+                            ),
                           if (user.areaId != null)
                             AppBadge(
-                              label: user.areaName ??
+                              label:
+                                  user.areaName ??
                                   AppConfig.areaName(user.areaId!),
                               tone: BadgeTone.neutral,
                             ),
@@ -75,30 +77,35 @@ class ProfileView extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: AppSpacing.xl),
-        const SectionHeader(
-          title: 'Field tools',
-          subtitle: 'Useful when demonstrating weak-signal behaviour',
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Card(
-          child: SwitchListTile(
-            value: offlineSimulated,
-            onChanged: onOfflineChanged,
-            activeTrackColor: AppColors.primary,
-            title: AppText(
-              'Simulate offline mode',
-              variant: AppTextVariant.body,
-              fontWeight: FontWeight.w600,
-            ),
-            subtitle: AppText(
-              'Forces the checkpoint screen to show cached, unverified results.',
-              variant: AppTextVariant.caption,
-            ),
-            secondary: const Icon(Icons.cloud_off_rounded,
-                color: AppColors.warning),
+        // Testing aid only; hidden from real staff in live mode.
+        if (demoMode) ...<Widget>[
+          const SizedBox(height: AppSpacing.xl),
+          const SectionHeader(
+            title: 'Field tools',
+            subtitle: 'Useful when demonstrating weak-signal behaviour',
           ),
-        ),
+          const SizedBox(height: AppSpacing.md),
+          Card(
+            child: SwitchListTile(
+              value: offlineSimulated,
+              onChanged: onOfflineChanged,
+              activeTrackColor: AppColors.primary,
+              title: AppText(
+                'Simulate offline mode',
+                variant: AppTextVariant.body,
+                fontWeight: FontWeight.w600,
+              ),
+              subtitle: AppText(
+                'Forces the checkpoint screen to show cached, unverified results.',
+                variant: AppTextVariant.caption,
+              ),
+              secondary: const Icon(
+                Icons.cloud_off_rounded,
+                color: AppColors.warning,
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: AppSpacing.xl),
         const SectionHeader(title: 'Account'),
         const SizedBox(height: AppSpacing.md),
@@ -110,8 +117,10 @@ class ProfileView extends StatelessWidget {
             ),
             child: Column(
               children: <Widget>[
-                InfoRow(label: 'User ID', value: user.id),
-                const Divider(height: 1),
+                if (demoMode) ...<Widget>[
+                  InfoRow(label: 'User ID', value: user.id),
+                  const Divider(height: 1),
+                ],
                 InfoRow(label: 'Role', value: user.role.label),
                 const Divider(height: 1),
                 InfoRow(
@@ -133,10 +142,7 @@ class ProfileView extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         Center(
-          child: AppText(
-            '${AppConfig.appName} · CC105 Groupata',
-            variant: AppTextVariant.caption,
-          ),
+          child: AppText(AppConfig.appName, variant: AppTextVariant.caption),
         ),
       ],
     );

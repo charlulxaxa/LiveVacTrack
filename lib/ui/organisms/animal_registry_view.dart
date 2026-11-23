@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/enums/vax_status.dart';
 import '../../data/models/animal.dart';
+import '../atoms/app_skeleton.dart';
 import '../atoms/app_button.dart';
-import '../atoms/app_spinner.dart';
 import '../molecules/animal_list_tile.dart';
 import '../molecules/empty_state.dart';
 import '../molecules/error_banner.dart';
@@ -59,7 +59,8 @@ class _AnimalRegistryViewState extends State<AnimalRegistryView> {
   List<Animal> get _filtered {
     final String query = _query.trim().toLowerCase();
     return widget.animals.where((Animal animal) {
-      final bool matchesQuery = query.isEmpty ||
+      final bool matchesQuery =
+          query.isEmpty ||
           animal.tagNo.toLowerCase().contains(query) ||
           animal.species.toLowerCase().contains(query) ||
           animal.breed.toLowerCase().contains(query) ||
@@ -84,10 +85,7 @@ class _AnimalRegistryViewState extends State<AnimalRegistryView> {
     final Widget body;
 
     if (widget.loading && widget.animals.isEmpty) {
-      body = const Padding(
-        padding: EdgeInsets.all(AppSpacing.xxl),
-        child: Center(child: AppSpinner()),
-      );
+      body = const SkeletonList();
     } else if (widget.error != null && widget.animals.isEmpty) {
       body = ErrorBanner(message: widget.error!);
     } else if (rows.isEmpty) {
@@ -111,9 +109,7 @@ class _AnimalRegistryViewState extends State<AnimalRegistryView> {
             if (i > 0) const SizedBox(height: AppSpacing.sm),
             AnimalListTile(
               animal: rows[i],
-              onTap: widget.onTap == null
-                  ? null
-                  : () => widget.onTap!(rows[i]),
+              onTap: widget.onTap == null ? null : () => widget.onTap!(rows[i]),
             ),
           ],
           PaginationBar(
@@ -127,7 +123,8 @@ class _AnimalRegistryViewState extends State<AnimalRegistryView> {
 
     final Widget content = ListTemplate(
       title: widget.title,
-      subtitle: widget.subtitle ??
+      subtitle:
+          widget.subtitle ??
           '${widget.animals.length} animals · ${_count(VaxStatus.valid.wire)} currently vaccinated',
       action: widget.onAdd == null
           ? null
@@ -175,9 +172,6 @@ class _AnimalRegistryViewState extends State<AnimalRegistryView> {
     );
 
     if (widget.onRefresh == null) return content;
-    return RefreshIndicator(
-      onRefresh: widget.onRefresh!,
-      child: content,
-    );
+    return RefreshIndicator(onRefresh: widget.onRefresh!, child: content);
   }
 }

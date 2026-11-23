@@ -4,7 +4,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../data/enums/permit_status.dart';
 import '../../data/models/animal.dart';
 import '../../data/models/permit.dart';
-import '../atoms/app_spinner.dart';
+import '../atoms/app_skeleton.dart';
 import '../molecules/empty_state.dart';
 import '../molecules/error_banner.dart';
 import '../molecules/pagination_bar.dart';
@@ -61,9 +61,9 @@ class _PermitListViewState extends State<PermitListView> {
     final String query = _query.trim().toLowerCase();
     return widget.permits.where((Permit permit) {
       final PermitStatus status = permit.effectiveStatus();
-      final bool matchesFilter =
-          _filter == 'all' || status.wire == _filter;
-      final bool matchesQuery = query.isEmpty ||
+      final bool matchesFilter = _filter == 'all' || status.wire == _filter;
+      final bool matchesQuery =
+          query.isEmpty ||
           permit.id.toLowerCase().contains(query) ||
           permit.origin.toLowerCase().contains(query) ||
           permit.destination.toLowerCase().contains(query) ||
@@ -85,10 +85,7 @@ class _PermitListViewState extends State<PermitListView> {
     final Widget body;
 
     if (widget.loading && widget.permits.isEmpty) {
-      body = const Padding(
-        padding: EdgeInsets.all(AppSpacing.xxl),
-        child: Center(child: AppSpinner()),
-      );
+      body = const SkeletonList();
     } else if (widget.error != null && widget.permits.isEmpty) {
       body = ErrorBanner(message: widget.error!);
     } else if (rows.isEmpty) {
@@ -105,9 +102,7 @@ class _PermitListViewState extends State<PermitListView> {
             PermitListTile(
               permit: rows[i],
               animalTag: _tagFor(rows[i].animalId),
-              onTap: widget.onTap == null
-                  ? null
-                  : () => widget.onTap!(rows[i]),
+              onTap: widget.onTap == null ? null : () => widget.onTap!(rows[i]),
             ),
           ],
           PaginationBar(

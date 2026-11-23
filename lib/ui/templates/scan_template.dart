@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_spacing.dart';
 
-/// Template: full-height scanner area with room for a result panel below.
+/// Template: scanner area, its controls, and an optional result section.
 class ScanTemplate extends StatelessWidget {
   const ScanTemplate({
     required this.scanner,
     required this.controls,
-    required this.result,
     super.key,
+    this.result,
   });
 
   final Widget scanner;
   final Widget controls;
-  final Widget result;
+  final Widget? result;
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +28,10 @@ class ScanTemplate extends StatelessWidget {
         scanner,
         const SizedBox(height: AppSpacing.lg),
         controls,
-        const SizedBox(height: AppSpacing.lg),
-        result,
+        if (result != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.lg),
+          result!,
+        ],
       ],
     );
   }

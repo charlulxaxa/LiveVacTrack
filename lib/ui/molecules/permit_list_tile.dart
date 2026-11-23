@@ -23,62 +23,65 @@ class PermitListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = permit.effectiveStatus();
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: AppText(
-                      permit.id,
-                      variant: AppTextVariant.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+    // Read by screen readers as one item instead of separate fragments.
+    return MergeSemantics(
+      child: Card(
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: AppText(
+                        permit.id,
+                        variant: AppTextVariant.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  AppBadge(
-                    label: status.label,
-                    tone: permitTone(status),
-                    dense: true,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              AppText(
-                '${permit.origin} → ${permit.destination}',
-                variant: AppTextVariant.body,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Row(
-                children: <Widget>[
-                  if (animalTag != null) ...<Widget>[
-                    AppText(
-                      animalTag!,
-                      variant: AppTextVariant.caption,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
+                    AppBadge(
+                      label: status.label,
+                      tone: permitTone(status),
+                      dense: true,
                     ),
-                    AppText(' · ', variant: AppTextVariant.caption),
                   ],
-                  Expanded(
-                    child: AppText(
-                      'Travel ${formatDate(permit.travelDate)}',
-                      variant: AppTextVariant.caption,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                AppText(
+                  '${permit.origin} → ${permit.destination}',
+                  variant: AppTextVariant.body,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: <Widget>[
+                    if (animalTag != null) ...<Widget>[
+                      AppText(
+                        animalTag!,
+                        variant: AppTextVariant.caption,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      AppText(' · ', variant: AppTextVariant.caption),
+                    ],
+                    Expanded(
+                      child: AppText(
+                        'Travel ${formatDate(permit.travelDate)}',
+                        variant: AppTextVariant.caption,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

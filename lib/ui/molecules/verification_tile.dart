@@ -16,71 +16,74 @@ class VerificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: scanSoftColor(verification.result),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+    // Read by screen readers as one item instead of separate fragments.
+    return MergeSemantics(
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: scanSoftColor(verification.result),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                ),
+                child: Icon(
+                  scanIcon(verification.result),
+                  size: 20,
+                  color: scanColor(verification.result),
+                ),
               ),
-              child: Icon(
-                scanIcon(verification.result),
-                size: 20,
-                color: scanColor(verification.result),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: AppText(
-                          verification.permitId,
-                          variant: AppTextVariant.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: AppText(
+                            verification.permitId,
+                            variant: AppTextVariant.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                      AppBadge(
-                        label: verification.result.label,
-                        tone: scanTone(verification.result),
+                        AppBadge(
+                          label: verification.result.label,
+                          tone: scanTone(verification.result),
+                          dense: true,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    AppText(
+                      verification.checkpointName,
+                      variant: AppTextVariant.caption,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    AppText(
+                      formatDateTime(verification.scannedAt),
+                      variant: AppTextVariant.caption,
+                    ),
+                    if (verification.wasOffline) ...<Widget>[
+                      const SizedBox(height: 4),
+                      const AppBadge(
+                        label: 'Offline scan',
+                        tone: BadgeTone.warning,
                         dense: true,
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 2),
-                  AppText(
-                    verification.checkpointName,
-                    variant: AppTextVariant.caption,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  AppText(
-                    formatDateTime(verification.scannedAt),
-                    variant: AppTextVariant.caption,
-                  ),
-                  if (verification.wasOffline) ...<Widget>[
-                    const SizedBox(height: 4),
-                    const AppBadge(
-                      label: 'Offline scan',
-                      tone: BadgeTone.warning,
-                      dense: true,
-                    ),
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

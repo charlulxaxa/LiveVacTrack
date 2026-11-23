@@ -16,21 +16,24 @@ class AppAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        shape: BoxShape.circle,
-        border: Border.all(color: color.withValues(alpha: 0.25)),
-      ),
-      child: Text(
-        initials,
-        style: TextStyle(
-          fontSize: size * 0.34,
-          fontWeight: FontWeight.w700,
-          color: color,
+    // Initials are decorative; the name is always shown next to the avatar.
+    return ExcludeSemantics(
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          shape: BoxShape.circle,
+          border: Border.all(color: color.withValues(alpha: 0.25)),
+        ),
+        child: Text(
+          initials,
+          style: TextStyle(
+            fontSize: size * 0.34,
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
         ),
       ),
     );

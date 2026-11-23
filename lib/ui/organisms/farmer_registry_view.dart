@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../data/models/farmer.dart';
+import '../atoms/app_skeleton.dart';
 import '../atoms/app_button.dart';
-import '../atoms/app_spinner.dart';
 import '../molecules/empty_state.dart';
 import '../molecules/error_banner.dart';
 import '../molecules/farmer_list_tile.dart';
@@ -63,10 +63,7 @@ class _FarmerRegistryViewState extends State<FarmerRegistryView> {
     final Widget body;
 
     if (widget.loading && widget.farmers.isEmpty) {
-      body = const Padding(
-        padding: EdgeInsets.all(AppSpacing.xxl),
-        child: Center(child: AppSpinner()),
-      );
+      body = const SkeletonList();
     } else if (widget.error != null && widget.farmers.isEmpty) {
       body = ErrorBanner(message: widget.error!);
     } else if (rows.isEmpty) {
@@ -86,9 +83,7 @@ class _FarmerRegistryViewState extends State<FarmerRegistryView> {
             if (i > 0) const SizedBox(height: AppSpacing.sm),
             FarmerListTile(
               farmer: rows[i],
-              onTap: widget.onTap == null
-                  ? null
-                  : () => widget.onTap!(rows[i]),
+              onTap: widget.onTap == null ? null : () => widget.onTap!(rows[i]),
             ),
           ],
           PaginationBar(
@@ -121,9 +116,6 @@ class _FarmerRegistryViewState extends State<FarmerRegistryView> {
     );
 
     if (widget.onRefresh == null) return content;
-    return RefreshIndicator(
-      onRefresh: widget.onRefresh!,
-      child: content,
-    );
+    return RefreshIndicator(onRefresh: widget.onRefresh!, child: content);
   }
 }
