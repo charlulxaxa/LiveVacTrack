@@ -6,6 +6,7 @@ import '../../core/constants/firestore_paths.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/errors/error_mapper.dart';
 import '../enums/user_role.dart';
+import '../models/staff_member.dart';
 import '../services/staff_account_service.dart';
 
 /// Live mode: creates staff accounts directly from the admin's device, so it
@@ -19,8 +20,9 @@ import '../services/staff_account_service.dart';
 /// The role lives in the `users/{uid}` document, which the app reads at sign
 /// in. Custom claims cannot be set from a client; that needs the Admin SDK.
 class FirebaseStaffAccountService implements StaffAccountService {
-  FirebaseStaffAccountService(this._firestore);
+  FirebaseStaffAccountService(this._auth, this._firestore);
 
+  final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
   static const String _provisioningAppName = 'staff-provisioning';
@@ -107,6 +109,81 @@ class FirebaseStaffAccountService implements StaffAccountService {
     }
 
     return StaffAccountResult(uid: newUser.uid, email: normalisedEmail);
+  }
+
+  @override
+  Stream<List<StaffMember>> watchStaff() {
+    return _firestore
+        .collection(FirestorePaths.users)
+        .snapshots()
+        .map((QuerySnapshot<Map<String, dynamic>> snapshot) {
+      final List<StaffMember> members = snapshot.docs
+          .where((QueryDocumentSnapshot<Map<String, dynamic>> doc) =>
+              doc.data()['removed'] != true)
+          .map((QueryDocumentSnapshot<Map<String, dynamic>> doc) =>
+              StaffMember.fromMap(doc.id, doc.data()))
+          .where((StaffMember m) => m.role != UserRole.admin)
+          .toList()
+        ..sort((StaffMember a, StaffMember b) => a.displayName
+            .toLowerCase()
+            .compareTo(b.displayName.toLowerCase()));
+      return members;
+    });
+  }
+
+  /// Clients cannot set another user's password (that needs the Admin SDK),
+  /// so this sends Firebase's reset email and the staff member picks a new
+  /// password themselves.
+  @override
+  Future<String> resetPassword(StaffMember member) async {
+    final String? email = member.email;
+    if (email == null || email.isEmpty) {
+      throw const AppException(
+        'No email is stored for this account. Reset it from the Firebase '
+        'console under Authentication.',
+      );
+    }
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (error) {
+      throw ErrorMapper.auth(error);
+    }
+    return 'Password reset email sent to $email.';
+  }
+
+  @override
+  Future<void> setDisabled(StaffMember member, {required bool disabled}) async {
+    try {
+      await _firestore
+          .collection(FirestorePaths.users)
+          .doc(member.id)
+          .update(<String, dynamic>{
+        'disabled': disabled,
+        'disabledAt': disabled ? FieldValue.serverTimestamp() : null,
+      });
+    } catch (error) {
+      throw ErrorMapper.firestore(error);
+    }
+  }
+
+  /// The sign-in itself can only be deleted with the Admin SDK (or in the
+  /// Firebase console), so the profile is kept as a tombstone: disabled and
+  /// hidden. Deleting the document instead would let accounts that carry a
+  /// role custom claim fall back to that claim and keep their access.
+  @override
+  Future<void> removeStaff(StaffMember member) async {
+    try {
+      await _firestore
+          .collection(FirestorePaths.users)
+          .doc(member.id)
+          .update(<String, dynamic>{
+        'disabled': true,
+        'removed': true,
+        'removedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (error) {
+      throw ErrorMapper.firestore(error);
+    }
   }
 
   AppException _mapCreateError(FirebaseAuthException error) {

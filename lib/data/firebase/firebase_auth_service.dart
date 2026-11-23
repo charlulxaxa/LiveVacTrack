@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../core/constants/firestore_paths.dart';
+import '../../core/errors/app_exception.dart';
 import '../enums/user_role.dart';
 import '../models/app_user.dart';
 import '../services/auth_service.dart';
@@ -16,7 +17,14 @@ class FirebaseAuthService implements AuthService {
   Stream<AppUser?> authStateChanges() {
     return _auth.authStateChanges().asyncMap((User? user) async {
       if (user == null) return null;
-      return _loadUser(user);
+      try {
+        return await _loadUser(user);
+      } on AppException catch (error) {
+        // A deactivated account was signed out in _loadUser. Treat it as
+        // signed out so the login page stays up; signIn() reports the reason.
+        if (error.message == deactivatedMessage) return null;
+        rethrow;
+      }
     });
   }
 
@@ -58,7 +66,14 @@ class FirebaseAuthService implements AuthService {
         );
 
     if (snapshot.exists) {
-      return AppUser.fromMap(user.uid, snapshot.data()!);
+      final Map<String, dynamic> data = snapshot.data()!;
+      // Deactivated or removed by the super admin. The Firebase sign-in still
+      // exists (only the Admin SDK can disable it), so end the session here.
+      if (data['disabled'] == true || data['removed'] == true) {
+        await _auth.signOut();
+        throw const AppException(deactivatedMessage);
+      }
+      return AppUser.fromMap(user.uid, data);
     }
 
     // Fallback to custom claims when the profile document has not been created.

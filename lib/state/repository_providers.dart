@@ -69,7 +69,10 @@ final Provider<QuarantineRepository> quarantineRepositoryProvider =
 final Provider<StaffAccountService> staffAccountServiceProvider =
     Provider<StaffAccountService>((Ref ref) {
   if (AppConfig.demoMode) return DemoStaffAccountService();
-  return FirebaseStaffAccountService(FirebaseFirestore.instance);
+  return FirebaseStaffAccountService(
+    FirebaseAuth.instance,
+    FirebaseFirestore.instance,
+  );
 });
 
 final Provider<PsgcLocationService> psgcLocationServiceProvider =

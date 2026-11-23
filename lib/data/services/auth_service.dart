@@ -5,6 +5,10 @@ import '../../core/errors/app_exception.dart';
 import '../models/app_user.dart';
 import '../enums/user_role.dart';
 
+/// Shown when a deactivated or removed staff account tries to sign in.
+const String deactivatedMessage =
+    'This account has been deactivated. Contact the super admin.';
+
 abstract class AuthService {
   Stream<AppUser?> authStateChanges();
 
@@ -91,6 +95,9 @@ class DemoAuthService implements AuthService {
     ),
   ];
 
+  /// Accounts the super admin deactivated in demo mode.
+  static final Set<String> disabledIds = <String>{};
+
   final StreamController<AppUser?> _controller =
       StreamController<AppUser?>.broadcast();
   AppUser? _current;
@@ -110,6 +117,9 @@ class DemoAuthService implements AuthService {
     final String normalised = email.trim().toLowerCase();
     for (final DemoAccount account in accounts) {
       if (account.email == normalised && account.password == password) {
+        if (disabledIds.contains(account.user.id)) {
+          throw const AppException(deactivatedMessage);
+        }
         _current = account.user;
         _controller.add(_current);
         return account.user;
