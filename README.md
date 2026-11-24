@@ -25,7 +25,17 @@ flutter pub get
 flutter run
 ```
 
-Demo accounts (password `demo1234`):
+The sign-in screen has a **Demo mode** switch (remembered on the device).
+
+- **On:** works fully offline. The built-in demo accounts below are
+  hardcoded in the app (`DemoAuthService`) and use the sample data in
+  `lib/data/demo/`, kept in memory on the device. Nothing is read from or
+  written to Firebase, and the demo accounts are not Firebase accounts.
+- **Off:** official accounts sign in through Firebase (see *Live Firebase
+  setup*). Official data lives only in Firestore.
+
+Demo accounts (password `demo1234`, listed on the sign-in screen only while
+demo mode is on):
 
 | Email | Role |
 | --- | --- |
@@ -120,6 +130,11 @@ own state and pass plain data/callbacks down.
    flutterfire configure --project=<your-project-id>
    ```
    This generates `lib/firebase_options.dart` and `android/app/google-services.json`.
+   Both hold the project's API key and are **git-ignored**; each developer
+   generates their own. Templates with placeholders are committed as
+   `lib/firebase_options.dart.example` and
+   `android/app/google-services.json.example` (copy and fill them in if you
+   are not using the FlutterFire CLI).
    `main.dart` already calls `Firebase.initializeApp()` for live builds.
 3. Enable **Authentication → Email/Password** and **Cloud Firestore**.
 4. Upgrade the project to the **Blaze** plan (required to deploy Cloud
@@ -155,40 +170,19 @@ own state and pass plain data/callbacks down.
    `createStaffAccount` callable function, which is restricted to those two
    roles. To create an account from a terminal instead, see
    `scripts/provision-user.js` (requires a service account key).
-   **Spark (free) plan:** export the built-in demo accounts (password
-   `demo1234`) to Firebase without Cloud Functions or a service account:
+   **Spark (free) plan:** no Cloud Functions are needed for accounts. Deploy
+   the rules and indexes, then create the first official super admin (no
+   assigned area; oversees all areas). Its email must be listed in
+   `isBootstrapAdmin()` in `firestore.rules` before the rules are deployed:
    ```bash
    firebase deploy --only firestore:rules,firestore:indexes
-   node scripts/seed-demo-accounts.js
-   node scripts/seed-demo-data.js
+   node scripts/create-admin.js --email offadmin@gmail.com      --password <password> --name "Official Admin"
    ```
-   `seed-demo-data.js` copies the demo farmers, animals, vaccinations,
-   permits, quarantines and checkpoint scans into Firestore, linked to the
-   demo accounts' real UIDs. Both scripts are safe to re-run; add `--reset`
-   to `seed-demo-data.js` to overwrite those records with fresh copies.
-
-   **Demo vs official data.** Demo accounts (`isDemo: true` on their
-   profile) read and write only the `demo_*` collections (`demo_farmers`,
-   `demo_animals`, ...) and show "Demo mode" on their profile. Every other
-   account is an official account and uses the plain collections
-   (`farmers`, `animals`, ...). `firestore.rules` enforces the split. The
-   demo admin's password is public, so it can only view the demo staff
-   list; accounts are created and managed by an official super admin.
-
-   Create an official super admin (no assigned area; oversees all areas).
-   The email must first be added to `isBootstrapAdmin()` in
-   `firestore.rules` and the rules deployed:
-   ```bash
-   node scripts/create-admin.js --email offadmin@gmail.com \
-     --password <password> --name "Official Admin"
-   ``` After that, the super admin creates further
-   accounts from **Staff → Add staff account**; the app writes them straight
-   to Firebase Auth and `users/{uid}` (no function needed). Those accounts are
-   not listed under DEMO ACCOUNTS on the login screen.
-9. Run against the live project:
-   ```bash
-   flutter run --dart-define=DEMO_MODE=false
-   ```
+   After that, the super admin creates further accounts from **Staff → Add
+   staff account**; the app writes them straight to Firebase Auth and
+   `users/{uid}`.
+9. Run the app with `flutter run`, leave **Demo mode** off on the sign-in
+   screen, and sign in with an official account.
 
 ### Local emulator
 

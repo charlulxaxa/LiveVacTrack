@@ -23,15 +23,9 @@ service cloud.firestore {
         && profile().get('removed', false) != true;
     }
 
-    // Built-in demo account: works only with the demo_* collections.
-    function isDemoUser() {
-      return profile().get('isDemo', false) == true;
-    }
-
-    // An active official super admin. The demo admin's password is public,
-    // so it cannot create or change accounts.
-    function isOfficialAdmin() {
-      return isActive() && profile().role == 'admin' && !isDemoUser();
+    // An active super admin.
+    function isAdmin() {
+      return isActive() && profile().role == 'admin';
     }
 
     // Official super admins that may create their own admin profile once,
@@ -42,70 +36,32 @@ service cloud.firestore {
         && request.auth.uid == uid
         && request.auth.token.email in ['offadmin@gmail.com']
         && request.resource.data.email == request.auth.token.email
-        && request.resource.data.role == 'admin'
-        && request.resource.data.get('isDemo', false) == false;
+        && request.resource.data.role == 'admin';
     }
 
-    // The built-in demo accounts and the only role each may hold. Must match
-    // DemoAuthService.accounts and scripts/seed-demo-accounts.js.
-    function demoRoleFor(email) {
-      return {
-        'admin@livevactrack.test': 'admin',
-        'registry@livevactrack.test': 'registry',
-        'vet@livevactrack.test': 'vet',
-        'clerk@livevactrack.test': 'clerk',
-        'inspector@livevactrack.test': 'inspector',
-        'disease@livevactrack.test': 'disease_control'
-      }.get(email, null);
-    }
-
-    // A demo account writing its own profile with its fixed demo role
-    // (used by scripts/seed-demo-accounts.js on the Spark plan).
-    function isOwnDemoProfile(uid) {
-      return signedIn()
-        && request.auth.uid == uid
-        && request.auth.token.email != null
-        && demoRoleFor(request.auth.token.email) != null
-        && request.resource.data.email == request.auth.token.email
-        && request.resource.data.role == demoRoleFor(request.auth.token.email)
-        && request.resource.data.isDemo == true;
-    }
-
+    // Only official accounts live in Firebase. The demo accounts are
+    // hardcoded in the app and run offline, so they never reach these rules.
     match /users/{uid} {
       allow read: if signedIn();
 
-      // Staff accounts are created by an official super admin from the app
-      // and are always official accounts.
-      allow create: if (isOfficialAdmin()
+      // Staff accounts are created by a super admin from the app.
+      allow create: if (isAdmin()
                         && request.resource.data.role in
-                           ['registry', 'vet', 'clerk', 'inspector', 'disease_control']
-                        && request.resource.data.get('isDemo', false) == false)
-                    || isOwnDemoProfile(uid)
+                           ['registry', 'vet', 'clerk', 'inspector', 'disease_control'])
                     || isBootstrapAdmin(uid);
 
-      // An official super admin deactivates/removes official staff accounts.
-      // A demo account may refresh its own demo profile but never its
-      // disabled/removed flags.
-      allow update: if (isOfficialAdmin()
-                        && resource.data.role != 'admin'
-                        && request.resource.data.role != 'admin'
-                        && resource.data.get('isDemo', false) == false
-                        && request.resource.data.get('isDemo', false) == false)
-                    || (isOwnDemoProfile(uid)
-                        && !request.resource.data.diff(resource.data)
-                              .affectedKeys().hasAny(['disabled', 'removed',
-                                                      'disabledAt', 'removedAt']));
+      // A super admin deactivates/removes staff accounts (not other admins).
+      allow update: if isAdmin()
+                    && resource.data.role != 'admin'
+                    && request.resource.data.role != 'admin';
 
       allow delete: if false;
     }
 
-    // Data collections. Demo accounts only reach the demo_* copies (demo
-    // data set); official accounts only reach the plain collections
-    // (official data set). Deactivated or removed accounts reach neither.
+    // Data collections: any active staff account (signed in, has a profile,
+    // not deactivated or removed).
     match /{collection}/{document=**} {
-      allow read, write: if collection != 'users'
-                         && isActive()
-                         && collection.matches('demo_.*') == isDemoUser();
+      allow read, write: if collection != 'users' && isActive();
     }
   }
 }

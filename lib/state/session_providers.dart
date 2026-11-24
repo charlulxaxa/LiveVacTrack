@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/constants/firestore_paths.dart';
 import '../data/models/app_user.dart';
 import 'repository_providers.dart';
 
@@ -17,15 +16,4 @@ final StreamProvider<AppUser?> authStateProvider = StreamProvider<AppUser?>(
 
 final Provider<AppUser?> currentUserProvider = Provider<AppUser?>((Ref ref) {
   return ref.watch(authStateProvider).value;
-});
-
-/// Which Firestore data set the signed-in account uses: demo accounts get the
-/// `demo_*` collections, official accounts the plain ones. Repositories watch
-/// this, so they switch automatically when a different account signs in.
-final Provider<FirestorePaths> firestorePathsProvider =
-    Provider<FirestorePaths>((Ref ref) {
-  final bool isDemo = ref.watch(
-    currentUserProvider.select((AppUser? user) => user?.isDemo ?? false),
-  );
-  return FirestorePaths.forUser(isDemo: isDemo);
 });

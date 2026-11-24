@@ -27,34 +27,6 @@
           "order": "DESCENDING"
         }
       ]
-    },
-    {
-      "collectionGroup": "demo_verifications",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "inspectorUid",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "scannedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "demo_verifications",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "animalId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "scannedAt",
-          "order": "DESCENDING"
-        }
-      ]
     }
   ],
   "fieldOverrides": []

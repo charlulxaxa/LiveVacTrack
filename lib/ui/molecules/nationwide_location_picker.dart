@@ -2,8 +2,10 @@ import 'package:collection/collection.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/config/app_config.dart';
 import '../../core/services/psgc_location_service.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../state/app_providers.dart';
 import '../../state/repository_providers.dart';
 import '../atoms/app_text.dart';
 import 'dropdown_field.dart';
@@ -47,7 +49,32 @@ class _NationwideLocationPickerState
   @override
   void initState() {
     super.initState();
-    _loadRegions();
+    // Demo mode is offline: it uses a fixed list instead of the PSGC service.
+    if (!ref.read(demoModeProvider)) _loadRegions();
+  }
+
+  Widget _demoPicker() {
+    return DropdownField<String>(
+      label: widget.label,
+      value: _barangayCode,
+      hint: 'Select a destination',
+      items: AppConfig.demoDestinations
+          .map((AreaOption a) =>
+              DropdownOption<String>(value: a.id, label: a.name))
+          .toList(),
+      onChanged: (String? id) {
+        setState(() => _barangayCode = id);
+        if (id == null) {
+          widget.onChanged(null);
+          return;
+        }
+        final AreaOption area = AppConfig.demoDestinations
+            .firstWhere((AreaOption a) => a.id == id);
+        widget.onChanged(AreaSelection(id: area.id, name: area.name));
+      },
+      validator: (String? value) =>
+          value == null ? 'Select a destination' : null,
+    );
   }
 
   Future<void> _loadRegions() async {
@@ -110,6 +137,8 @@ class _NationwideLocationPickerState
 
   @override
   Widget build(BuildContext context) {
+    if (ref.watch(demoModeProvider)) return _demoPicker();
+
     final PsgcCity? city =
         _cities.where((PsgcCity c) => c.code == _cityCode).firstOrNull;
 

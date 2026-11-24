@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:livevactrack/state/app_providers.dart';
 import 'package:livevactrack/core/services/psgc_location_service.dart';
 import 'package:livevactrack/ui/molecules/dropdown_field.dart';
 import 'package:livevactrack/ui/molecules/location_picker.dart';
@@ -48,6 +49,7 @@ void main() {
     AreaSelection? selection;
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [initialDemoModeProvider.overrideWithValue(true)],
         child: MaterialApp(
           home: Scaffold(
             body: Padding(
