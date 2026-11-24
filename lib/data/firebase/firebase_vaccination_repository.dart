@@ -6,15 +6,14 @@ import '../models/vaccination.dart';
 import '../repositories/vaccination_repository.dart';
 
 class FirebaseVaccinationRepository implements VaccinationRepository {
-  FirebaseVaccinationRepository(this._firestore, this._paths);
+  FirebaseVaccinationRepository(this._firestore);
 
   final FirebaseFirestore _firestore;
-  final FirestorePaths _paths;
 
   @override
   Stream<List<Vaccination>> watchForAnimal(String animalId) {
     return _firestore
-        .collection(_paths.vaccinations)
+        .collection(FirestorePaths.vaccinations)
         .where('animalId', isEqualTo: animalId)
         .snapshots()
         .map((QuerySnapshot<Map<String, dynamic>> snapshot) {
@@ -32,7 +31,7 @@ class FirebaseVaccinationRepository implements VaccinationRepository {
   Future<void> record(Vaccination vaccination) async {
     try {
       await _firestore
-          .collection(_paths.vaccinations)
+          .collection(FirestorePaths.vaccinations)
           .doc(vaccination.id)
           .set(vaccination.toMap());
     } catch (error) {

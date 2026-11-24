@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:livevactrack/app.dart';
+import 'package:livevactrack/state/app_providers.dart';
 
 Future<void> _signIn(WidgetTester tester, String email) async {
   await tester.enterText(find.byType(TextFormField).at(0), email);
@@ -14,7 +15,10 @@ Future<void> _signIn(WidgetTester tester, String email) async {
 }
 
 Future<void> _pumpApp(WidgetTester tester) async {
-  await tester.pumpWidget(const ProviderScope(child: LiveVacTrackApp()));
+  await tester.pumpWidget(ProviderScope(
+    overrides: [initialDemoModeProvider.overrideWithValue(true)],
+    child: const LiveVacTrackApp(),
+  ));
   await tester.pumpAndSettle();
 }
 

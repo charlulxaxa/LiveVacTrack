@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
 import '../../core/services/psgc_location_service.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../state/app_providers.dart';
 import '../../state/repository_providers.dart';
 import '../atoms/app_text.dart';
 import 'dropdown_field.dart';
@@ -47,7 +48,7 @@ class _LocationPickerState extends ConsumerState<LocationPicker> {
   @override
   void initState() {
     super.initState();
-    if (!AppConfig.demoMode) {
+    if (!ref.read(demoModeProvider)) {
       _loadProvinces();
     }
   }
@@ -113,7 +114,7 @@ class _LocationPickerState extends ConsumerState<LocationPicker> {
 
   @override
   Widget build(BuildContext context) {
-    if (AppConfig.demoMode) {
+    if (ref.watch(demoModeProvider)) {
       return _demoPicker();
     }
 

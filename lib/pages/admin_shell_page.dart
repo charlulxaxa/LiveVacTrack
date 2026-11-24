@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/config/app_config.dart';
 import '../data/models/app_user.dart';
 import '../data/models/staff_member.dart';
 import '../state/app_providers.dart';
@@ -35,7 +34,7 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
         confirmed = await ConfirmDialog.show(
           context,
           title: 'Reset password?',
-          message: AppConfig.demoMode
+          message: ref.read(demoModeProvider)
               ? '$name\'s password will be set back to the demo password.'
               : 'A password reset email will be sent to '
                   '${member.email ?? 'this account'}. $name chooses a new '
@@ -95,10 +94,6 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
   Widget build(BuildContext context) {
     final AsyncValue<List<StaffMember>> staffAsync =
         ref.watch(staffMembersProvider);
-    // The demo admin's password is shown on the login screen, so in live mode
-    // it may only look at the demo accounts. Only an official admin can
-    // create or change accounts. (The offline demo build keeps full access.)
-    final bool readOnly = !AppConfig.demoMode && widget.user.isDemo;
 
     return AppShell(
       title: 'Super admin',
@@ -115,10 +110,7 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
             onRetry: () => ref.invalidate(staffMembersProvider),
             busyIds: _busyIds,
             onAction: _handleAction,
-            readOnlyNotice: readOnly
-                ? 'Demo admin: these are the demo accounts. Sign in with an '
-                    'official admin account to create or manage staff accounts.'
-                : null,
+
             onAdd: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) => const StaffAccountFormPage(),

@@ -26,9 +26,15 @@ class LoginForm extends StatefulWidget {
     super.key,
     this.demoCredentials = const <LoginDemoCredential>[],
     this.demoPassword = '',
+    this.demoMode = false,
+    this.onDemoModeChanged,
   });
 
   final Future<void> Function(String email, String password) onSubmit;
+
+  /// Demo mode switch. The demo accounts are only listed while it is on.
+  final bool demoMode;
+  final ValueChanged<bool>? onDemoModeChanged;
   final List<LoginDemoCredential> demoCredentials;
   final String demoPassword;
 
@@ -77,6 +83,11 @@ class _LoginFormState extends State<LoginForm> {
     await _submit();
   }
 
+  void _toggleDemo() {
+    setState(() => _error = null);
+    widget.onDemoModeChanged!(!widget.demoMode);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -90,7 +101,11 @@ class _LoginFormState extends State<LoginForm> {
               AppText('Sign in', variant: AppTextVariant.title),
               const SizedBox(height: 4),
               AppText(
-                'Use the account issued by the vet office. There is no public sign-up.',
+                widget.demoMode
+                    ? 'Demo mode: sample data on this device only. Works '
+                        'offline; nothing is saved to the server.'
+                    : 'Use the account issued by the vet office. There is no '
+                        'public sign-up.',
                 variant: AppTextVariant.caption,
               ),
               const SizedBox(height: AppSpacing.xl),
@@ -149,7 +164,7 @@ class _LoginFormState extends State<LoginForm> {
                 loading: _loading,
                 icon: Icons.login_rounded,
               ),
-              if (widget.demoCredentials.isNotEmpty) ...<Widget>[
+              if (widget.demoMode && widget.demoCredentials.isNotEmpty) ...<Widget>[
                 const SizedBox(height: AppSpacing.xl),
                 Row(
                   children: <Widget>[
@@ -190,6 +205,50 @@ class _LoginFormState extends State<LoginForm> {
                   'Password for all demo accounts: ${widget.demoPassword}',
                   variant: AppTextVariant.caption,
                   color: AppColors.inkMuted,
+                ),
+              ],
+              if (widget.onDemoModeChanged != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.md),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    onTap: _loading ? null : _toggleDemo,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: AppSpacing.sm),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Icon(
+                            Icons.science_outlined,
+                            size: 16,
+                            color: widget.demoMode
+                                ? AppColors.primary
+                                : AppColors.inkMuted,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          AppText(
+                            'Demo mode (offline)',
+                            variant: AppTextVariant.caption,
+                            color: widget.demoMode
+                                ? AppColors.primary
+                                : AppColors.inkMuted,
+                          ),
+                          Transform.scale(
+                            scale: 0.75,
+                            child: Switch(
+                              value: widget.demoMode,
+                              activeTrackColor: AppColors.primary,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              onChanged:
+                                  _loading ? null : (_) => _toggleDemo(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ],
