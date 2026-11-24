@@ -2,10 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
-import '../core/config/app_config.dart';
 import '../data/models/animal.dart';
 import '../data/models/app_user.dart';
-import '../data/services/auth_service.dart';
 import '../data/models/vaccination.dart';
 import '../state/app_providers.dart';
 import '../state/registry_providers.dart';
@@ -16,6 +14,7 @@ import '../ui/organisms/profile_view.dart';
 import '../ui/organisms/vaccination_form.dart';
 import 'animal_detail_page.dart';
 import 'page_helpers.dart';
+import 'change_password_page.dart';
 
 class VetShellPage extends ConsumerWidget {
   const VetShellPage({required this.user, super.key});
@@ -99,12 +98,12 @@ class VetShellPage extends ConsumerWidget {
           selectedIcon: Icons.person_rounded,
           child: ProfileView(
             user: user,
-            demoMode: AppConfig.demoMode &&
-                DemoAuthService.isDemoUser(user.id),
+            demoMode: user.isDemo,
             offlineSimulated: ref.watch(offlineSimulatorProvider),
             onOfflineChanged: (bool value) =>
                 ref.read(offlineSimulatorProvider.notifier).setValue(value),
             onSignOut: () => ref.read(authServiceProvider).signOut(),
+            onChangePassword: () => ChangePasswordPage.open(context),
           ),
         ),
       ],

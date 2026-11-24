@@ -48,6 +48,53 @@ class FirebaseAuthService implements AuthService {
   @override
   Future<void> signOut() => _auth.signOut();
 
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final User? user = _auth.currentUser;
+    final String? email = user?.email;
+    if (user == null || email == null) {
+      throw const AppException('Sign in again to change your password.');
+    }
+    final String? problem =
+        validateNewPassword(newPassword, currentPassword: currentPassword);
+    if (problem != null) throw AppException(problem);
+
+    // Firebase only lets a recently signed-in user change the password, and
+    // this is also where the current password is checked.
+    try {
+      await user.reauthenticateWithCredential(
+        EmailAuthProvider.credential(email: email, password: currentPassword),
+      );
+    } on FirebaseAuthException catch (error) {
+      switch (error.code) {
+        case 'wrong-password':
+        case 'invalid-credential':
+        case 'INVALID_LOGIN_CREDENTIALS':
+          throw const AppException('Your current password is incorrect.');
+        case 'too-many-requests':
+          throw const AppException(
+            'Too many attempts. Wait a few minutes and try again.',
+          );
+        case 'network-request-failed':
+          throw const AppException('No connection. Check your signal.');
+        default:
+          throw AppException(error.message ?? 'Could not check your password.');
+      }
+    }
+
+    try {
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (error) {
+      if (error.code == 'weak-password') {
+        throw const AppException('That password is too weak.');
+      }
+      throw AppException(error.message ?? 'Could not change your password.');
+    }
+  }
+
   Future<AppUser> _loadUser(User user) async {
     // Without a timeout, an unreachable Firestore backend leaves the app on
     // the loading spinner forever instead of showing an error.

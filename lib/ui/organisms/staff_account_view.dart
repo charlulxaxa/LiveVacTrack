@@ -21,6 +21,7 @@ class StaffAccountView extends StatelessWidget {
     required this.onAdd,
     required this.onAction,
     super.key,
+    this.readOnlyNotice,
     this.error,
     this.onRetry,
     this.busyIds = const <String>{},
@@ -29,7 +30,12 @@ class StaffAccountView extends StatelessWidget {
   final List<StaffMember> staff;
   final bool loading;
   final String? error;
-  final VoidCallback onAdd;
+  /// Null hides the add button (read-only view).
+  final VoidCallback? onAdd;
+
+  /// When set, the view is read-only: no add button, no account menus, and
+  /// this message explains why.
+  final String? readOnlyNotice;
   final VoidCallback? onRetry;
   final void Function(StaffMember member, StaffAction action) onAction;
 
@@ -70,11 +76,14 @@ class StaffAccountView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
-        AppButton(
-          label: 'Add staff account',
-          onPressed: onAdd,
-          icon: Icons.person_add_rounded,
-        ),
+        if (readOnlyNotice != null)
+          ErrorBanner(message: readOnlyNotice!)
+        else
+          AppButton(
+            label: 'Add staff account',
+            onPressed: onAdd,
+            icon: Icons.person_add_rounded,
+          ),
         const SizedBox(height: AppSpacing.xl),
         AppText(
           staff.isEmpty ? 'Accounts' : 'Accounts (${staff.length})',
@@ -99,7 +108,9 @@ class StaffAccountView extends StatelessWidget {
               child: _StaffTile(
                 member: member,
                 busy: busyIds.contains(member.id),
-                onAction: (StaffAction action) => onAction(member, action),
+                onAction: readOnlyNotice != null
+                    ? null
+                    : (StaffAction action) => onAction(member, action),
               ),
             ),
         const SizedBox(height: AppSpacing.md),
@@ -122,7 +133,7 @@ class _StaffTile extends StatelessWidget {
 
   final StaffMember member;
   final bool busy;
-  final ValueChanged<StaffAction> onAction;
+  final ValueChanged<StaffAction>? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -200,7 +211,7 @@ class _StaffTile extends StatelessWidget {
               padding: EdgeInsets.all(AppSpacing.md),
               child: AppSpinner(size: 20),
             )
-          else
+          else if (onAction != null)
             PopupMenuButton<StaffAction>(
               tooltip: 'Manage ${member.displayName}',
               icon: const Icon(Icons.more_vert_rounded),

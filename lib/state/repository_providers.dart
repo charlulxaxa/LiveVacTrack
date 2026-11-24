@@ -19,6 +19,7 @@ import '../data/repositories/registry_repository.dart';
 import '../data/repositories/vaccination_repository.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/staff_account_service.dart';
+import 'session_providers.dart';
 
 final Provider<DemoStore> demoStoreProvider =
     Provider<DemoStore>((Ref ref) => DemoStore.instance);
@@ -33,7 +34,10 @@ final Provider<RegistryRepository> registryRepositoryProvider =
   if (AppConfig.demoMode) {
     return DemoRegistryRepository(ref.watch(demoStoreProvider));
   }
-  return FirebaseRegistryRepository(FirebaseFirestore.instance);
+  return FirebaseRegistryRepository(
+    FirebaseFirestore.instance,
+    ref.watch(firestorePathsProvider),
+  );
 });
 
 final Provider<VaccinationRepository> vaccinationRepositoryProvider =
@@ -41,7 +45,10 @@ final Provider<VaccinationRepository> vaccinationRepositoryProvider =
   if (AppConfig.demoMode) {
     return DemoVaccinationRepository(ref.watch(demoStoreProvider));
   }
-  return FirebaseVaccinationRepository(FirebaseFirestore.instance);
+  return FirebaseVaccinationRepository(
+    FirebaseFirestore.instance,
+    ref.watch(firestorePathsProvider),
+  );
 });
 
 final Provider<PermitRepository> permitRepositoryProvider =
@@ -52,6 +59,7 @@ final Provider<PermitRepository> permitRepositoryProvider =
   return FirebasePermitRepository(
     FirebaseFirestore.instance,
     FirebaseFunctionsService(FirebaseFunctions.instance),
+    ref.watch(firestorePathsProvider),
   );
 });
 
@@ -63,6 +71,7 @@ final Provider<QuarantineRepository> quarantineRepositoryProvider =
   return FirebaseQuarantineRepository(
     FirebaseFirestore.instance,
     FirebaseFunctionsService(FirebaseFunctions.instance),
+    ref.watch(firestorePathsProvider),
   );
 });
 
@@ -72,6 +81,7 @@ final Provider<StaffAccountService> staffAccountServiceProvider =
   return FirebaseStaffAccountService(
     FirebaseAuth.instance,
     FirebaseFirestore.instance,
+    viewerIsDemo: ref.watch(firestorePathsProvider).isDemo,
   );
 });
 

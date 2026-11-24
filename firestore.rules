@@ -11,13 +11,39 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // An active super admin (role in users/{uid}, not deactivated/removed).
-    function isAdmin() {
+    function hasProfile() {
       return signedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && profile().role == 'admin'
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    // Signed in, has a profile, and not deactivated/removed by an admin.
+    function isActive() {
+      return hasProfile()
         && profile().get('disabled', false) != true
         && profile().get('removed', false) != true;
+    }
+
+    // Built-in demo account: works only with the demo_* collections.
+    function isDemoUser() {
+      return profile().get('isDemo', false) == true;
+    }
+
+    // An active official super admin. The demo admin's password is public,
+    // so it cannot create or change accounts.
+    function isOfficialAdmin() {
+      return isActive() && profile().role == 'admin' && !isDemoUser();
+    }
+
+    // Official super admins that may create their own admin profile once,
+    // right after their sign-in is created (scripts/create-admin.js). The
+    // email can only be claimed once in Firebase Auth.
+    function isBootstrapAdmin(uid) {
+      return signedIn()
+        && request.auth.uid == uid
+        && request.auth.token.email in ['offadmin@gmail.com']
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role == 'admin'
+        && request.resource.data.get('isDemo', false) == false;
     }
 
     // The built-in demo accounts and the only role each may hold. Must match
@@ -48,16 +74,23 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if signedIn();
 
-      // Staff accounts are created by the super admin from the app. Admin
-      // accounts cannot be created this way.
-      allow create: if (isAdmin()
+      // Staff accounts are created by an official super admin from the app
+      // and are always official accounts.
+      allow create: if (isOfficialAdmin()
                         && request.resource.data.role in
-                           ['registry', 'vet', 'clerk', 'inspector', 'disease_control'])
-                    || isOwnDemoProfile(uid);
+                           ['registry', 'vet', 'clerk', 'inspector', 'disease_control']
+                        && request.resource.data.get('isDemo', false) == false)
+                    || isOwnDemoProfile(uid)
+                    || isBootstrapAdmin(uid);
 
-      // The super admin deactivates/removes accounts. A demo account may
-      // refresh its own demo profile but never its disabled/removed flags.
-      allow update: if (isAdmin() && request.resource.data.role != 'admin')
+      // An official super admin deactivates/removes official staff accounts.
+      // A demo account may refresh its own demo profile but never its
+      // disabled/removed flags.
+      allow update: if (isOfficialAdmin()
+                        && resource.data.role != 'admin'
+                        && request.resource.data.role != 'admin'
+                        && resource.data.get('isDemo', false) == false
+                        && request.resource.data.get('isDemo', false) == false)
                     || (isOwnDemoProfile(uid)
                         && !request.resource.data.diff(resource.data)
                               .affectedKeys().hasAny(['disabled', 'removed',
@@ -66,12 +99,13 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Everything else: signed-in staff only, until proper per-role rules are
-    // written. Expires on the same date as the original test-mode rules.
+    // Data collections. Demo accounts only reach the demo_* copies (demo
+    // data set); official accounts only reach the plain collections
+    // (official data set). Deactivated or removed accounts reach neither.
     match /{collection}/{document=**} {
       allow read, write: if collection != 'users'
-                         && signedIn()
-                         && request.time < timestamp.date(2026, 12, 23);
+                         && isActive()
+                         && collection.matches('demo_.*') == isDemoUser();
     }
   }
 }
