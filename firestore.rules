@@ -1,18 +1,77 @@
-rules_version='2'
+rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      // This rule allows anyone with your database reference to view, edit,
-      // and delete all data in your database. It is useful for getting
-      // started, but it is configured to expire after 30 days because it
-      // leaves your app open to attackers. At that time, all client
-      // requests to your database will be denied.
-      //
-      // Make sure to write security rules for your app before that time, or
-      // else all client requests to your database will be denied until you
-      // update your rules.
-      allow read, write: if request.time < timestamp.date(2026, 12, 23);
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // An active super admin (role in users/{uid}, not deactivated/removed).
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && profile().role == 'admin'
+        && profile().get('disabled', false) != true
+        && profile().get('removed', false) != true;
+    }
+
+    // The built-in demo accounts and the only role each may hold. Must match
+    // DemoAuthService.accounts and scripts/seed-demo-accounts.js.
+    function demoRoleFor(email) {
+      return {
+        'admin@livevactrack.test': 'admin',
+        'registry@livevactrack.test': 'registry',
+        'vet@livevactrack.test': 'vet',
+        'clerk@livevactrack.test': 'clerk',
+        'inspector@livevactrack.test': 'inspector',
+        'disease@livevactrack.test': 'disease_control'
+      }.get(email, null);
+    }
+
+    // A demo account writing its own profile with its fixed demo role
+    // (used by scripts/seed-demo-accounts.js on the Spark plan).
+    function isOwnDemoProfile(uid) {
+      return signedIn()
+        && request.auth.uid == uid
+        && request.auth.token.email != null
+        && demoRoleFor(request.auth.token.email) != null
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role == demoRoleFor(request.auth.token.email)
+        && request.resource.data.isDemo == true;
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn();
+
+      // Staff accounts are created by the super admin from the app. Admin
+      // accounts cannot be created this way.
+      allow create: if (isAdmin()
+                        && request.resource.data.role in
+                           ['registry', 'vet', 'clerk', 'inspector', 'disease_control'])
+                    || isOwnDemoProfile(uid);
+
+      // The super admin deactivates/removes accounts. A demo account may
+      // refresh its own demo profile but never its disabled/removed flags.
+      allow update: if (isAdmin() && request.resource.data.role != 'admin')
+                    || (isOwnDemoProfile(uid)
+                        && !request.resource.data.diff(resource.data)
+                              .affectedKeys().hasAny(['disabled', 'removed',
+                                                      'disabledAt', 'removedAt']));
+
+      allow delete: if false;
+    }
+
+    // Everything else: signed-in staff only, until proper per-role rules are
+    // written. Expires on the same date as the original test-mode rules.
+    match /{collection}/{document=**} {
+      allow read, write: if collection != 'users'
+                         && signedIn()
+                         && request.time < timestamp.date(2026, 12, 23);
     }
   }
 }

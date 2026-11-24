@@ -59,6 +59,28 @@ class FirebaseFunctionsService {
     return (data['revokedCount'] as num?)?.toInt() ?? 0;
   }
 
+  Future<void> activateQuarantine({
+    required String quarantineId,
+  }) async {
+    await _call(
+      'activateQuarantine',
+      <String, dynamic>{
+        'quarantineId': quarantineId,
+      },
+    );
+  }
+
+  Future<void> liftQuarantine({
+    required String quarantineId,
+  }) async {
+    await _call(
+      'liftQuarantine',
+      <String, dynamic>{
+        'quarantineId': quarantineId,
+      },
+    );
+  }
+
   Future<Map<String, dynamic>> createStaffAccount({
     required String email,
     required String password,

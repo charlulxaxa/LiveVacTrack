@@ -372,6 +372,94 @@ exports.declareQuarantine = onCall(async (request) => {
   return { revokedCount: affected.size, quarantineId: quarantineRef.id };
 });
 
+// --------------------------------------------------------- activateQuarantine
+
+exports.activateQuarantine = onCall(async (request) => {
+  const { uid } = await requireRole(request, ['disease_control']);
+
+  const data = request.data || {};
+  const quarantineId = typeof data.quarantineId === 'string' ? data.quarantineId.trim() : '';
+
+  if (!quarantineId) {
+    throw new HttpsError('invalid-argument', 'quarantineId is required.');
+  }
+
+  const quarantineRef = db.collection('quarantines').doc(quarantineId);
+  const quarantineSnapshot = await quarantineRef.get();
+
+  if (!quarantineSnapshot.exists) {
+    throw new HttpsError('not-found', 'Quarantine not found.');
+  }
+
+  const quarantine = quarantineSnapshot.data();
+  if (quarantine.status === 'active') {
+    throw new HttpsError('already-exists', 'Quarantine is already active.');
+  }
+
+  const now = new Date();
+
+  const affected = await db
+    .collection('permits')
+    .where('areaId', '==', quarantine.areaId)
+    .where('status', '==', 'issued')
+    .get();
+
+  const batch = db.batch();
+  batch.update(quarantineRef, {
+    status: 'active',
+    startedAt: Timestamp.fromDate(now),
+    liftedAt: null,
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+
+  for (const doc of affected.docs) {
+    batch.update(doc.ref, {
+      status: 'revoked',
+      revokedAt: Timestamp.fromDate(now),
+      revokedReason: 'quarantine',
+    });
+  }
+
+  await batch.commit();
+
+  return { revokedCount: affected.size };
+});
+
+// ------------------------------------------------------------ liftQuarantine
+
+exports.liftQuarantine = onCall(async (request) => {
+  const { uid } = await requireRole(request, ['disease_control']);
+
+  const data = request.data || {};
+  const quarantineId = typeof data.quarantineId === 'string' ? data.quarantineId.trim() : '';
+
+  if (!quarantineId) {
+    throw new HttpsError('invalid-argument', 'quarantineId is required.');
+  }
+
+  const quarantineRef = db.collection('quarantines').doc(quarantineId);
+  const quarantineSnapshot = await quarantineRef.get();
+
+  if (!quarantineSnapshot.exists) {
+    throw new HttpsError('not-found', 'Quarantine not found.');
+  }
+
+  const quarantine = quarantineSnapshot.data();
+  if (quarantine.status === 'lifted') {
+    throw new HttpsError('already-exists', 'Quarantine is already lifted.');
+  }
+
+  const now = new Date();
+
+  await quarantineRef.update({
+    status: 'lifted',
+    liftedAt: Timestamp.fromDate(now),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+
+  return { success: true };
+});
+
 // ----------------------------------------------------- createStaffAccount
 
 /**

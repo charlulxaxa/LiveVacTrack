@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/config/app_config.dart';
@@ -17,15 +17,16 @@ class LoginPage extends ConsumerWidget {
     return AuthTemplate(
       child: LoginForm(
         demoPassword: AppConfig.demoPassword,
-        demoCredentials: AppConfig.demoMode
-            ? DemoAuthService.accounts
-                .map((DemoAccount account) => LoginDemoCredential(
-                      email: account.email,
-                      roleLabel: account.user.role.shortLabel,
-                      name: account.user.displayName,
-                    ))
-                .toList()
-            : const <LoginDemoCredential>[],
+        // Shown in live mode too: scripts/seed-demo-accounts.js creates these
+        // same accounts in Firebase. Accounts added by the super admin are
+        // never listed here.
+        demoCredentials: DemoAuthService.demoAccounts
+            .map((DemoAccount account) => LoginDemoCredential(
+                  email: account.email,
+                  roleLabel: account.user.role.shortLabel,
+                  name: account.user.displayName,
+                ))
+            .toList(),
         onSubmit: (String email, String password) async {
           try {
             await auth.signIn(email: email, password: password);

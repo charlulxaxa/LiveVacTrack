@@ -53,10 +53,10 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCWTQLQI9dZFUcOy1hCoM5FdNCgQ3u_sa4',
-    appId: '1:361890176336:android:4a881869689c924cd0e055',
-    messagingSenderId: '361890176336',
-    projectId: 'livevactrack',
-    storageBucket: 'livevactrack.firebasestorage.app',
+    apiKey: 'AIzaSyDJq9Y0rGgolvPBNLYTo-t6vA2n1y9FNxM',
+    appId: '1:894113119706:android:117f7b3c7e49e6700ad4e3',
+    messagingSenderId: '894113119706',
+    projectId: 'livevactrack-3be1d',
+    storageBucket: 'livevactrack-3be1d.firebasestorage.app',
   );
 }

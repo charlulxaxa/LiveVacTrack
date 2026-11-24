@@ -1,21 +1,26 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/services/psgc_location_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../data/models/quarantine.dart';
 import '../atoms/app_button.dart';
 import '../atoms/app_text.dart';
 import '../atoms/app_text_field.dart';
 import '../molecules/confirm_dialog.dart';
 import '../molecules/error_banner.dart';
 import '../molecules/location_picker.dart';
+import '../molecules/quarantine_tile.dart';
 import '../templates/form_template.dart';
 
 class DeclareQuarantineForm extends StatefulWidget {
   const DeclareQuarantineForm({
     required this.activeAreas,
     required this.onDeclare,
+    this.quarantines = const <Quarantine>[],
+    this.onActivate,
+    this.onLift,
     super.key,
   });
 
@@ -25,6 +30,9 @@ class DeclareQuarantineForm extends StatefulWidget {
     required String areaName,
     required String reason,
   }) onDeclare;
+  final List<Quarantine> quarantines;
+  final Future<void> Function(Quarantine quarantine)? onActivate;
+  final Future<void> Function(Quarantine quarantine)? onLift;
 
   @override
   State<DeclareQuarantineForm> createState() => _DeclareQuarantineFormState();
@@ -137,6 +145,13 @@ class _DeclareQuarantineFormState extends State<DeclareQuarantineForm> {
       );
     }
 
+    final List<Quarantine> liftedQuarantines = widget.quarantines
+        .where((Quarantine q) => !q.isActive)
+        .toList();
+    final List<Quarantine> activeQuarantines = widget.quarantines
+        .where((Quarantine q) => q.isActive)
+        .toList();
+
     return Form(
       key: _formKey,
       child: FormTemplate(
@@ -196,6 +211,58 @@ class _DeclareQuarantineFormState extends State<DeclareQuarantineForm> {
               ],
             ),
           ),
+          if (liftedQuarantines.isNotEmpty || activeQuarantines.isNotEmpty) ...<Widget>[
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              'Existing quarantines',
+              variant: AppTextVariant.title,
+              color: AppColors.ink,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            if (liftedQuarantines.isNotEmpty) ...<Widget>[
+              AppText(
+                'Lifted (can be reactivated)',
+                variant: AppTextVariant.caption,
+                color: AppColors.inkMuted,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Column(
+                children: <Widget>[
+                  for (int i = 0; i < liftedQuarantines.length; i++) ...<Widget>[
+                    if (i > 0) const SizedBox(height: AppSpacing.sm),
+                    QuarantineTile(
+                      quarantine: liftedQuarantines[i],
+                      onActivate: widget.onActivate != null
+                          ? () => widget.onActivate!(liftedQuarantines[i])
+                          : null,
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            if (activeQuarantines.isNotEmpty) ...<Widget>[
+              AppText(
+                'Active (can be lifted)',
+                variant: AppTextVariant.caption,
+                color: AppColors.inkMuted,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Column(
+                children: <Widget>[
+                  for (int i = 0; i < activeQuarantines.length; i++) ...<Widget>[
+                    if (i > 0) const SizedBox(height: AppSpacing.sm),
+                    QuarantineTile(
+                      quarantine: activeQuarantines[i],
+                      onLift: widget.onLift != null
+                          ? () => widget.onLift!(activeQuarantines[i])
+                          : null,
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ],
         ],
         footer: AppButton(
           label: 'Declare quarantine',

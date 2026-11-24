@@ -41,7 +41,8 @@ abstract class StaffAccountService {
 }
 
 /// Demo mode: appends the account to [DemoAuthService.accounts] so it can be
-/// used to sign in immediately.
+/// used to sign in immediately. Created accounts are flagged `isDemo: false`
+/// so they are not listed as demo accounts on the login screen.
 class DemoStaffAccountService implements StaffAccountService {
   @override
   Future<StaffAccountResult> createStaffAccount({
@@ -84,6 +85,7 @@ class DemoStaffAccountService implements StaffAccountService {
           areaId: areaId,
           areaName: areaName,
         ),
+        isDemo: false,
       ),
     );
 
@@ -131,6 +133,7 @@ class DemoStaffAccountService implements StaffAccountService {
       email: account.email,
       password: AppConfig.demoPassword,
       user: account.user,
+      isDemo: account.isDemo,
     );
     return 'Demo mode: password for ${account.email} reset to '
         '${AppConfig.demoPassword}.';

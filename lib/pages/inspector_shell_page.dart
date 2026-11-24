@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/config/app_config.dart';
 import '../data/models/app_user.dart';
+import '../data/services/auth_service.dart';
 import '../data/models/permit.dart';
 import '../data/models/quarantine.dart';
 import '../data/models/verification.dart';
@@ -117,7 +118,8 @@ class InspectorShellPage extends ConsumerWidget {
           selectedIcon: Icons.person_rounded,
           child: ProfileView(
             user: user,
-            demoMode: AppConfig.demoMode,
+            demoMode: AppConfig.demoMode &&
+                DemoAuthService.isDemoUser(user.id),
             offlineSimulated: ref.watch(offlineSimulatorProvider),
             onOfflineChanged: (bool value) =>
                 ref.read(offlineSimulatorProvider.notifier).setValue(value),

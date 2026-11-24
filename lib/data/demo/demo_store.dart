@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../../core/config/app_config.dart';
 import '../enums/permit_status.dart';
+import '../enums/quarantine_status.dart';
 import '../enums/vax_status.dart';
 import '../models/animal.dart';
 import '../models/farmer.dart';
@@ -189,6 +190,53 @@ class DemoStore {
   void addQuarantine(Quarantine quarantine) {
     _quarantines.insert(0, quarantine);
     _notify();
+  }
+
+  void activateQuarantine(String quarantineId) {
+    for (int i = 0; i < _quarantines.length; i++) {
+      if (_quarantines[i].id == quarantineId) {
+        final Quarantine q = _quarantines[i];
+        if (!q.isActive) {
+          _quarantines[i] = Quarantine(
+            id: q.id,
+            areaId: q.areaId,
+            areaName: q.areaName,
+            reason: q.reason,
+            status: QuarantineStatus.active,
+            startedAt: q.startedAt,
+            liftedAt: null,
+            declaredBy: q.declaredBy,
+            sourceMessageId: q.sourceMessageId,
+          );
+          revokePermitsForArea(q.areaId);
+          _notify();
+        }
+        break;
+      }
+    }
+  }
+
+  void liftQuarantine(String quarantineId) {
+    for (int i = 0; i < _quarantines.length; i++) {
+      if (_quarantines[i].id == quarantineId) {
+        final Quarantine q = _quarantines[i];
+        if (q.isActive) {
+          _quarantines[i] = Quarantine(
+            id: q.id,
+            areaId: q.areaId,
+            areaName: q.areaName,
+            reason: q.reason,
+            status: QuarantineStatus.lifted,
+            startedAt: q.startedAt,
+            liftedAt: DateTime.now(),
+            declaredBy: q.declaredBy,
+            sourceMessageId: q.sourceMessageId,
+          );
+          _notify();
+        }
+        break;
+      }
+    }
   }
 
   // ------------------------------------------------------------ verifications

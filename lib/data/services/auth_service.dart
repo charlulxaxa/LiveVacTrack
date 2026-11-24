@@ -22,11 +22,16 @@ class DemoAccount {
     required this.email,
     required this.password,
     required this.user,
+    this.isDemo = true,
   });
 
   final String email;
   final String password;
   final AppUser user;
+
+  /// True for the seeded demo accounts listed on the login screen. Accounts
+  /// created by the super admin are real staff accounts and set this false.
+  final bool isDemo;
 }
 
 class DemoAuthService implements AuthService {
@@ -94,6 +99,14 @@ class DemoAuthService implements AuthService {
       ),
     ),
   ];
+
+  /// Seeded demo accounts only (excludes accounts created by the admin).
+  static List<DemoAccount> get demoAccounts =>
+      accounts.where((DemoAccount a) => a.isDemo).toList();
+
+  /// Whether [userId] belongs to a seeded demo account.
+  static bool isDemoUser(String userId) =>
+      accounts.any((DemoAccount a) => a.isDemo && a.user.id == userId);
 
   /// Accounts the super admin deactivated in demo mode.
   static final Set<String> disabledIds = <String>{};
