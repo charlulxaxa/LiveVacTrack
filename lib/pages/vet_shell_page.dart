@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/config/app_config.dart';
 import '../data/models/animal.dart';
 import '../data/models/app_user.dart';
+import '../data/services/auth_service.dart';
 import '../data/models/vaccination.dart';
 import '../state/app_providers.dart';
 import '../state/registry_providers.dart';
@@ -98,7 +99,8 @@ class VetShellPage extends ConsumerWidget {
           selectedIcon: Icons.person_rounded,
           child: ProfileView(
             user: user,
-            demoMode: AppConfig.demoMode,
+            demoMode: AppConfig.demoMode &&
+                DemoAuthService.isDemoUser(user.id),
             offlineSimulated: ref.watch(offlineSimulatorProvider),
             onOfflineChanged: (bool value) =>
                 ref.read(offlineSimulatorProvider.notifier).setValue(value),

@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/config/app_config.dart';
 import '../data/models/app_user.dart';
+import '../data/services/auth_service.dart';
 import '../data/models/quarantine.dart';
 import '../state/app_providers.dart';
 import '../state/quarantine_providers.dart';
@@ -25,6 +26,7 @@ class DiseaseShellPage extends ConsumerWidget {
     final List<Quarantine> quarantines =
         quarantinesAsync.value ?? <Quarantine>[];
     final Set<String> activeAreas = ref.watch(activeQuarantineAreasProvider);
+    final quarantineRepository = ref.read(quarantineRepositoryProvider);
 
     return AppShell(
       title: 'Disease control',
@@ -38,6 +40,66 @@ class DiseaseShellPage extends ConsumerWidget {
             quarantines: quarantines,
             loading: quarantinesAsync.isLoading,
             error: errorTextFor(quarantinesAsync),
+            onActivate: (Quarantine quarantine) async {
+              final bool confirmed = await _showConfirmDialog(
+                context,
+                title: 'Activate quarantine?',
+                message: 'This will revoke all issued permits in ${quarantine.areaName} and block new permits.',
+                confirmLabel: 'Activate',
+                destructive: true,
+              );
+              if (!confirmed) return;
+              try {
+                await quarantineRepository.activateQuarantine(
+                  quarantineId: quarantine.id,
+                  officer: user,
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Quarantine activated for ${quarantine.areaName}.'),
+                    ),
+                  );
+                }
+                ref.invalidate(quarantinesProvider);
+              } catch (error) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(error.toString())),
+                  );
+                }
+              }
+            },
+            onLift: (Quarantine quarantine) async {
+              final bool confirmed = await _showConfirmDialog(
+                context,
+                title: 'Lift quarantine?',
+                message: 'This will lift the quarantine for ${quarantine.areaName}. New permits will be allowed again.',
+                confirmLabel: 'Lift',
+                destructive: false,
+              );
+              if (!confirmed) return;
+              try {
+                await quarantineRepository.liftQuarantine(
+                  quarantineId: quarantine.id,
+                  officer: user,
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Quarantine lifted for ${quarantine.areaName}.'),
+                    ),
+                  );
+                }
+                ref.invalidate(quarantinesProvider);
+              } catch (error) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(error.toString())),
+                  );
+                }
+              }
+            },
             onRefresh: () async {
               ref.invalidate(quarantinesProvider);
               await Future<void>.delayed(const Duration(milliseconds: 300));
@@ -50,6 +112,7 @@ class DiseaseShellPage extends ConsumerWidget {
           selectedIcon: Icons.add_alert_rounded,
           child: DeclareQuarantineForm(
             activeAreas: activeAreas,
+            quarantines: quarantines,
             onDeclare: ({
               required String areaId,
               required String areaName,
@@ -74,6 +137,66 @@ class DiseaseShellPage extends ConsumerWidget {
               }
               return revoked;
             },
+            onActivate: (Quarantine quarantine) async {
+              final bool confirmed = await _showConfirmDialog(
+                context,
+                title: 'Activate quarantine?',
+                message: 'This will revoke all issued permits in ${quarantine.areaName} and block new permits.',
+                confirmLabel: 'Activate',
+                destructive: true,
+              );
+              if (!confirmed) return;
+              try {
+                await quarantineRepository.activateQuarantine(
+                  quarantineId: quarantine.id,
+                  officer: user,
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Quarantine activated for ${quarantine.areaName}.'),
+                    ),
+                  );
+                }
+                ref.invalidate(quarantinesProvider);
+              } catch (error) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(error.toString())),
+                  );
+                }
+              }
+            },
+            onLift: (Quarantine quarantine) async {
+              final bool confirmed = await _showConfirmDialog(
+                context,
+                title: 'Lift quarantine?',
+                message: 'This will lift the quarantine for ${quarantine.areaName}. New permits will be allowed again.',
+                confirmLabel: 'Lift',
+                destructive: false,
+              );
+              if (!confirmed) return;
+              try {
+                await quarantineRepository.liftQuarantine(
+                  quarantineId: quarantine.id,
+                  officer: user,
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Quarantine lifted for ${quarantine.areaName}.'),
+                    ),
+                  );
+                }
+                ref.invalidate(quarantinesProvider);
+              } catch (error) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(error.toString())),
+                  );
+                }
+              }
+            },
           ),
         ),
         ShellTab(
@@ -82,7 +205,8 @@ class DiseaseShellPage extends ConsumerWidget {
           selectedIcon: Icons.person_rounded,
           child: ProfileView(
             user: user,
-            demoMode: AppConfig.demoMode,
+            demoMode: AppConfig.demoMode &&
+                DemoAuthService.isDemoUser(user.id),
             offlineSimulated: ref.watch(offlineSimulatorProvider),
             onOfflineChanged: (bool value) =>
                 ref.read(offlineSimulatorProvider.notifier).setValue(value),
@@ -91,5 +215,35 @@ class DiseaseShellPage extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  Future<bool> _showConfirmDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required String confirmLabel,
+    required bool destructive,
+  }) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: destructive
+                    ? TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error)
+                    : null,
+                child: Text(confirmLabel),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 }

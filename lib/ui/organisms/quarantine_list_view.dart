@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -19,6 +19,8 @@ class QuarantineListView extends StatefulWidget {
     super.key,
     this.error,
     this.onDeclare,
+    this.onActivate,
+    this.onLift,
     this.onRefresh,
   });
 
@@ -26,6 +28,8 @@ class QuarantineListView extends StatefulWidget {
   final bool loading;
   final String? error;
   final VoidCallback? onDeclare;
+  final Future<void> Function(Quarantine quarantine)? onActivate;
+  final Future<void> Function(Quarantine quarantine)? onLift;
   final Future<void> Function()? onRefresh;
 
   @override
@@ -65,7 +69,15 @@ class _QuarantineListViewState extends State<QuarantineListView> {
         children: <Widget>[
           for (int i = 0; i < rows.length; i++) ...<Widget>[
             if (i > 0) const SizedBox(height: AppSpacing.sm),
-            QuarantineTile(quarantine: rows[i]),
+            QuarantineTile(
+              quarantine: rows[i],
+              onActivate: widget.onActivate != null && !rows[i].isActive
+                  ? () => widget.onActivate!(rows[i])
+                  : null,
+              onLift: widget.onLift != null && rows[i].isActive
+                  ? () => widget.onLift!(rows[i])
+                  : null,
+            ),
           ],
         ],
       );

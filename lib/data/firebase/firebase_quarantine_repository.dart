@@ -43,4 +43,28 @@ class FirebaseQuarantineRepository implements QuarantineRepository {
       throw ErrorMapper.functions(error);
     }
   }
+
+  @override
+  Future<void> activateQuarantine({
+    required String quarantineId,
+    required AppUser officer,
+  }) async {
+    try {
+      await _functions.activateQuarantine(quarantineId: quarantineId);
+    } catch (error) {
+      throw ErrorMapper.functions(error);
+    }
+  }
+
+  @override
+  Future<void> liftQuarantine({
+    required String quarantineId,
+    required AppUser officer,
+  }) async {
+    try {
+      await _functions.liftQuarantine(quarantineId: quarantineId);
+    } catch (error) {
+      throw ErrorMapper.functions(error);
+    }
+  }
 }

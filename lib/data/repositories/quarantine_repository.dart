@@ -13,6 +13,16 @@ abstract class QuarantineRepository {
     required String reason,
     required AppUser officer,
   });
+
+  Future<void> activateQuarantine({
+    required String quarantineId,
+    required AppUser officer,
+  });
+
+  Future<void> liftQuarantine({
+    required String quarantineId,
+    required AppUser officer,
+  });
 }
 
 class DemoQuarantineRepository implements QuarantineRepository {
@@ -51,5 +61,23 @@ class DemoQuarantineRepository implements QuarantineRepository {
       ),
     );
     return revoked;
+  }
+
+  @override
+  Future<void> activateQuarantine({
+    required String quarantineId,
+    required AppUser officer,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    _store.activateQuarantine(quarantineId);
+  }
+
+  @override
+  Future<void> liftQuarantine({
+    required String quarantineId,
+    required AppUser officer,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    _store.liftQuarantine(quarantineId);
   }
 }

@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "361890176336",
-    "project_id": "livevactrack",
-    "storage_bucket": "livevactrack.firebasestorage.app"
+    "project_number": "894113119706",
+    "project_id": "livevactrack-3be1d",
+    "storage_bucket": "livevactrack-3be1d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:361890176336:android:4a881869689c924cd0e055",
+        "mobilesdk_app_id": "1:894113119706:android:117f7b3c7e49e6700ad4e3",
         "android_client_info": {
           "package_name": "com.livevactrack.livevactrack"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCWTQLQI9dZFUcOy1hCoM5FdNCgQ3u_sa4"
+          "current_key": "AIzaSyDJq9Y0rGgolvPBNLYTo-t6vA2n1y9FNxM"
         }
       ],
       "services": {

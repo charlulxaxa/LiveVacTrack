@@ -155,6 +155,20 @@ own state and pass plain data/callbacks down.
    `createStaffAccount` callable function, which is restricted to those two
    roles. To create an account from a terminal instead, see
    `scripts/provision-user.js` (requires a service account key).
+   **Spark (free) plan:** export the built-in demo accounts (password
+   `demo1234`) to Firebase without Cloud Functions or a service account:
+   ```bash
+   firebase deploy --only firestore:rules,firestore:indexes
+   node scripts/seed-demo-accounts.js
+   node scripts/seed-demo-data.js
+   ```
+   `seed-demo-data.js` copies the demo farmers, animals, vaccinations,
+   permits, quarantines and checkpoint scans into Firestore, linked to the
+   demo accounts' real UIDs. Both scripts are safe to re-run; add `--reset`
+   to `seed-demo-data.js` to overwrite those records with fresh copies. After that, the super admin creates further
+   accounts from **Staff → Add staff account**; the app writes them straight
+   to Firebase Auth and `users/{uid}` (no function needed). Those accounts are
+   not listed under DEMO ACCOUNTS on the login screen.
 9. Run against the live project:
    ```bash
    flutter run --dart-define=DEMO_MODE=false
