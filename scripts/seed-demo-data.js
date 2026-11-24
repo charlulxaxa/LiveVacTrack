@@ -2,7 +2,11 @@
 /**
  * Exports the demo records (farmers, animals, vaccinations, permits,
  * quarantines, checkpoint verifications) from lib/data/demo/demo_seed.dart
- * to Firestore, so live mode starts with the same data as demo mode.
+ * to the demo data set in Firestore (demo_farmers, demo_animals, ...).
+ *
+ * Only the built-in demo accounts can see the demo data set. Official
+ * accounts use the plain collections (farmers, animals, ...), which start
+ * empty.
  *
  * Works on the free Spark plan: it signs in with the demo accounts through
  * the public Auth REST API and writes through the Firestore REST API. Run
@@ -252,11 +256,11 @@ async function main() {
   console.log(`Seeding demo data into ${projectId}${reset ? ' (reset)' : ''}\n`);
 
   const uids = {};
-  let adminToken = null;
+  let demoToken = null;
   for (const [demoId, email] of Object.entries(DEMO_EMAILS)) {
     const auth = await signIn(apiKey, email);
     uids[demoId] = auth.localId;
-    if (demoId === 'u-admin') adminToken = auth.idToken;
+    if (demoId === 'u-admin') demoToken = auth.idToken;
   }
   const uid = (demoId) => uids[demoId];
 
@@ -266,7 +270,7 @@ async function main() {
     const counts = { added: 0, written: 0, kept: 0 };
     for (const doc of docs) {
       try {
-        counts[await writeDoc(projectId, adminToken, collection, doc.id, doc.data)]++;
+        counts[await writeDoc(projectId, demoToken, `demo_${collection}`, doc.id, doc.data)]++;
       } catch (error) {
         failures++;
         console.error(`  FAILED ${error.message}`);
@@ -275,7 +279,7 @@ async function main() {
     const summary = reset
       ? `${counts.written} written`
       : `${counts.added} added, ${counts.kept} already there`;
-    console.log(`  ${collection.padEnd(14)} ${summary}`);
+    console.log(`  demo_${collection.padEnd(14)} ${summary}`);
   }
 
   if (failures > 0) process.exit(1);

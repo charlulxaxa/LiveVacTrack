@@ -1,10 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/config/app_config.dart';
 import '../data/models/animal.dart';
 import '../data/models/app_user.dart';
-import '../data/services/auth_service.dart';
 import '../data/models/permit.dart';
 import '../data/models/quarantine.dart';
 import '../state/app_providers.dart';
@@ -19,6 +17,7 @@ import '../ui/organisms/profile_view.dart';
 import '../ui/organisms/quarantine_list_view.dart';
 import 'page_helpers.dart';
 import 'permit_detail_page.dart';
+import 'change_password_page.dart';
 
 class ClerkShellPage extends ConsumerWidget {
   const ClerkShellPage({required this.user, super.key});
@@ -72,6 +71,7 @@ class ClerkShellPage extends ConsumerWidget {
           child: IssuePermitForm(
             animals: animals,
             quarantinedAreas: quarantinedAreas,
+            assignedAreaId: user.areaId,
             onIssue: ({
               required Animal animal,
               required String origin,
@@ -113,12 +113,12 @@ class ClerkShellPage extends ConsumerWidget {
           selectedIcon: Icons.person_rounded,
           child: ProfileView(
             user: user,
-            demoMode: AppConfig.demoMode &&
-                DemoAuthService.isDemoUser(user.id),
+            demoMode: user.isDemo,
             offlineSimulated: ref.watch(offlineSimulatorProvider),
             onOfflineChanged: (bool value) =>
                 ref.read(offlineSimulatorProvider.notifier).setValue(value),
             onSignOut: () => ref.read(authServiceProvider).signOut(),
+            onChangePassword: () => ChangePasswordPage.open(context),
           ),
         ),
       ],

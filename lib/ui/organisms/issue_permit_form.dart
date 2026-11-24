@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/date_utils.dart';
+import '../../core/services/psgc_location_service.dart';
 import '../../core/utils/qr_payload.dart';
 import '../../data/models/animal.dart';
 import '../../data/models/permit.dart';
@@ -10,11 +11,12 @@ import '../atoms/app_badge.dart';
 import '../atoms/app_button.dart';
 import '../atoms/app_qr_view.dart';
 import '../atoms/app_text.dart';
-import '../atoms/app_text_field.dart';
 import '../molecules/date_field.dart';
 import '../molecules/dropdown_field.dart';
 import '../molecules/error_banner.dart';
 import '../molecules/info_row.dart';
+import '../molecules/nationwide_location_picker.dart';
+import '../molecules/origin_barangay_picker.dart';
 import '../templates/form_template.dart';
 
 class IssuePermitForm extends StatefulWidget {
@@ -23,9 +25,13 @@ class IssuePermitForm extends StatefulWidget {
     required this.quarantinedAreas,
     required this.onIssue,
     required this.onViewPermit,
+    required this.assignedAreaId,
     super.key,
   });
 
+  /// The permit officer's own area; the origin is limited to the barangays
+  /// of that city or municipality.
+  final String? assignedAreaId;
   final List<Animal> animals;
   final Set<String> quarantinedAreas;
   final Future<Permit> Function({
@@ -42,20 +48,14 @@ class IssuePermitForm extends StatefulWidget {
 
 class _IssuePermitFormState extends State<IssuePermitForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _origin = TextEditingController();
-  final TextEditingController _destination = TextEditingController();
+  String? _originId;
+  String? _originLabel;
+  AreaSelection? _destination;
   String? _animalId;
   DateTime _travelDate = DateTime.now().add(const Duration(days: 1));
   bool _submitting = false;
   String? _error;
   Permit? _issued;
-
-  @override
-  void dispose() {
-    _origin.dispose();
-    _destination.dispose();
-    super.dispose();
-  }
 
   List<Animal> get _eligible => widget.animals.where((Animal animal) {
         return animal.isVaccinatedFor(_travelDate) &&
@@ -84,8 +84,8 @@ class _IssuePermitFormState extends State<IssuePermitForm> {
     try {
       final Permit permit = await widget.onIssue(
         animal: animal,
-        origin: _origin.text.trim(),
-        destination: _destination.text.trim(),
+        origin: _originLabel ?? '',
+        destination: _destination!.fullName,
         travelDate: _travelDate,
       );
       if (mounted) setState(() => _issued = permit);
@@ -100,8 +100,9 @@ class _IssuePermitFormState extends State<IssuePermitForm> {
     setState(() {
       _issued = null;
       _animalId = null;
-      _origin.clear();
-      _destination.clear();
+      _originId = null;
+      _originLabel = null;
+      _destination = null;
       _travelDate = DateTime.now().add(const Duration(days: 1));
     });
   }
@@ -187,18 +188,7 @@ class _IssuePermitFormState extends State<IssuePermitForm> {
                             '${animal.farmerName} · valid until ${formatDate(animal.vaccinatedUntil)}',
                       ))
                   .toList(),
-              onChanged: (String? value) {
-                setState(() {
-                  _animalId = value;
-                  if (value != null) {
-                    final Animal animal = eligible
-                        .firstWhere((Animal a) => a.id == value);
-                    if (_origin.text.trim().isEmpty) {
-                      _origin.text = animal.barangay;
-                    }
-                  }
-                });
-              },
+              onChanged: (String? value) => setState(() => _animalId = value),
               validator: (String? value) =>
                   value == null ? 'Select an animal' : null,
             ),
@@ -217,28 +207,23 @@ class _IssuePermitFormState extends State<IssuePermitForm> {
                   'Eligibility is checked against the vaccination valid-until date.',
             ),
             const SizedBox(height: AppSpacing.lg),
-            AppTextField(
-              controller: _origin,
-              label: 'Origin',
-              hint: 'e.g. Poblacion',
-              prefixIcon: Icons.trip_origin_rounded,
-              textInputAction: TextInputAction.next,
-              validator: (String? value) =>
-                  value == null || value.trim().isEmpty
-                      ? 'Origin is required'
-                      : null,
+            AppText('Origin', variant: AppTextVariant.title),
+            const SizedBox(height: AppSpacing.sm),
+            OriginBarangayPicker(
+              assignedAreaId: widget.assignedAreaId,
+              value: _originId,
+              onChanged: (String? id, String? label) => setState(() {
+                _originId = id;
+                _originLabel = label;
+              }),
             ),
-            const SizedBox(height: AppSpacing.lg),
-            AppTextField(
-              controller: _destination,
-              label: 'Destination',
-              hint: 'e.g. Legazpi City',
-              prefixIcon: Icons.place_outlined,
-              textInputAction: TextInputAction.done,
-              validator: (String? value) =>
-                  value == null || value.trim().isEmpty
-                      ? 'Destination is required'
-                      : null,
+            const SizedBox(height: AppSpacing.xl),
+            AppText('Destination', variant: AppTextVariant.title),
+            const SizedBox(height: AppSpacing.sm),
+            NationwideLocationPicker(
+              label: 'Destination barangay',
+              onChanged: (AreaSelection? value) =>
+                  setState(() => _destination = value),
             ),
             const SizedBox(height: AppSpacing.md),
             AppText(

@@ -9,6 +9,7 @@ class AppUser {
     this.areaId,
     this.areaName,
     this.createdAt,
+    this.isDemo = false,
   });
 
   final String id;
@@ -20,6 +21,10 @@ class AppUser {
   /// area ids are PSGC barangay codes in live mode.
   final String? areaName;
   final DateTime? createdAt;
+
+  /// Built-in demo account. Demo accounts only see and write the demo data
+  /// set (`demo_*` collections) and show "Demo mode" on their profile.
+  final bool isDemo;
 
   String get initials {
     final List<String> parts =
@@ -39,6 +44,7 @@ class AppUser {
       areaId: map['areaId'] as String?,
       areaName: map['areaName'] as String?,
       createdAt: dateFromValue(map['createdAt']),
+      isDemo: map['isDemo'] == true,
     );
   }
 
@@ -48,5 +54,6 @@ class AppUser {
         if (areaId != null) 'areaId': areaId,
         if (areaName != null) 'areaName': areaName,
         'createdAt': createdAt ?? DateTime.now(),
+        'isDemo': isDemo,
       };
 }

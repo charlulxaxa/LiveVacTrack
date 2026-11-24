@@ -1,9 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/config/app_config.dart';
 import '../data/models/app_user.dart';
-import '../data/services/auth_service.dart';
 import '../data/models/quarantine.dart';
 import '../state/app_providers.dart';
 import '../state/quarantine_providers.dart';
@@ -13,6 +11,7 @@ import '../ui/organisms/declare_quarantine_form.dart';
 import '../ui/organisms/profile_view.dart';
 import '../ui/organisms/quarantine_list_view.dart';
 import 'page_helpers.dart';
+import 'change_password_page.dart';
 
 class DiseaseShellPage extends ConsumerWidget {
   const DiseaseShellPage({required this.user, super.key});
@@ -205,12 +204,12 @@ class DiseaseShellPage extends ConsumerWidget {
           selectedIcon: Icons.person_rounded,
           child: ProfileView(
             user: user,
-            demoMode: AppConfig.demoMode &&
-                DemoAuthService.isDemoUser(user.id),
+            demoMode: user.isDemo,
             offlineSimulated: ref.watch(offlineSimulatorProvider),
             onOfflineChanged: (bool value) =>
                 ref.read(offlineSimulatorProvider.notifier).setValue(value),
             onSignOut: () => ref.read(authServiceProvider).signOut(),
+            onChangePassword: () => ChangePasswordPage.open(context),
           ),
         ),
       ],

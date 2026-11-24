@@ -13,15 +13,16 @@ import '../models/verification.dart';
 import '../repositories/permit_repository.dart';
 
 class FirebasePermitRepository implements PermitRepository {
-  FirebasePermitRepository(this._firestore, this._functions);
+  FirebasePermitRepository(this._firestore, this._functions, this._paths);
 
   final FirebaseFirestore _firestore;
+  final FirestorePaths _paths;
   final FirebaseFunctionsService _functions;
 
   @override
   Stream<List<Permit>> watchPermits({int limit = AppConfig.pageSize}) {
     return _firestore
-        .collection(FirestorePaths.permits)
+        .collection(_paths.permits)
         .orderBy('issuedAt', descending: true)
         .limit(limit)
         .snapshots()
@@ -34,7 +35,7 @@ class FirebasePermitRepository implements PermitRepository {
   @override
   Stream<Permit?> watchPermit(String id) {
     return _firestore
-        .collection(FirestorePaths.permits)
+        .collection(_paths.permits)
         .doc(id)
         .snapshots()
         .map((DocumentSnapshot<Map<String, dynamic>> doc) =>
@@ -44,7 +45,7 @@ class FirebasePermitRepository implements PermitRepository {
   @override
   Stream<List<Verification>> watchVerifications(String inspectorUid) {
     return _firestore
-        .collection(FirestorePaths.verifications)
+        .collection(_paths.verifications)
         .where('inspectorUid', isEqualTo: inspectorUid)
         .orderBy('scannedAt', descending: true)
         .limit(30)
@@ -58,7 +59,7 @@ class FirebasePermitRepository implements PermitRepository {
   @override
   Stream<List<Verification>> watchVerificationsForAnimal(String animalId) {
     return _firestore
-        .collection(FirestorePaths.verifications)
+        .collection(_paths.verifications)
         .where('animalId', isEqualTo: animalId)
         .orderBy('scannedAt', descending: true)
         .limit(AppConfig.pageSize)
@@ -99,7 +100,7 @@ class FirebasePermitRepository implements PermitRepository {
     final DocumentSnapshot<Map<String, dynamic>> snapshot;
     try {
       snapshot = await _firestore
-          .collection(FirestorePaths.permits)
+          .collection(_paths.permits)
           .doc(permitId)
           .get();
     } catch (error) {
@@ -124,7 +125,7 @@ class FirebasePermitRepository implements PermitRepository {
       try {
         final DocumentSnapshot<Map<String, dynamic>> snapshot =
             await _firestore
-                .collection(FirestorePaths.permits)
+                .collection(_paths.permits)
                 .doc(permitId)
                 .get(const GetOptions(source: Source.cache));
         if (snapshot.exists) {

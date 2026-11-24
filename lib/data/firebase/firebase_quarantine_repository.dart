@@ -8,15 +8,16 @@ import '../models/quarantine.dart';
 import '../repositories/quarantine_repository.dart';
 
 class FirebaseQuarantineRepository implements QuarantineRepository {
-  FirebaseQuarantineRepository(this._firestore, this._functions);
+  FirebaseQuarantineRepository(this._firestore, this._functions, this._paths);
 
   final FirebaseFirestore _firestore;
+  final FirestorePaths _paths;
   final FirebaseFunctionsService _functions;
 
   @override
   Stream<List<Quarantine>> watchQuarantines() {
     return _firestore
-        .collection(FirestorePaths.quarantines)
+        .collection(_paths.quarantines)
         .orderBy('startedAt', descending: true)
         .limit(50)
         .snapshots()

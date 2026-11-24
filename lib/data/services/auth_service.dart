@@ -15,6 +15,24 @@ abstract class AuthService {
   Future<AppUser> signIn({required String email, required String password});
 
   Future<void> signOut();
+
+  /// Changes the signed-in account's password after checking
+  /// [currentPassword]. Throws an [AppException] with a readable message.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
+}
+
+/// Shared password rules for every place a password is set.
+String? validateNewPassword(String newPassword, {String? currentPassword}) {
+  if (newPassword.length < 8) {
+    return 'Password must be at least 8 characters.';
+  }
+  if (currentPassword != null && newPassword == currentPassword) {
+    return 'The new password must be different from the current one.';
+  }
+  return null;
 }
 
 class DemoAccount {
@@ -46,6 +64,7 @@ class DemoAuthService implements AuthService {
         displayName: 'Super Admin',
         role: UserRole.admin,
         areaId: 'poblacion',
+        isDemo: true,
       ),
     ),
     DemoAccount(
@@ -56,6 +75,7 @@ class DemoAuthService implements AuthService {
         displayName: 'Rita Reyes',
         role: UserRole.registry,
         areaId: 'poblacion',
+        isDemo: true,
       ),
     ),
     DemoAccount(
@@ -66,6 +86,7 @@ class DemoAuthService implements AuthService {
         displayName: 'Dr. Vic Santos',
         role: UserRole.vet,
         areaId: 'poblacion',
+        isDemo: true,
       ),
     ),
     DemoAccount(
@@ -76,6 +97,7 @@ class DemoAuthService implements AuthService {
         displayName: 'Carla Dizon',
         role: UserRole.clerk,
         areaId: 'poblacion',
+        isDemo: true,
       ),
     ),
     DemoAccount(
@@ -86,6 +108,7 @@ class DemoAuthService implements AuthService {
         displayName: 'Insp. Noel Garcia',
         role: UserRole.inspector,
         areaId: 'san-jose',
+        isDemo: true,
       ),
     ),
     DemoAccount(
@@ -96,6 +119,7 @@ class DemoAuthService implements AuthService {
         displayName: 'Dr. Maya Lim',
         role: UserRole.diseaseControl,
         areaId: 'poblacion',
+        isDemo: true,
       ),
     ),
   ];
@@ -145,5 +169,33 @@ class DemoAuthService implements AuthService {
   Future<void> signOut() async {
     _current = null;
     _controller.add(null);
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+    final AppUser? current = _current;
+    final int index = current == null
+        ? -1
+        : accounts.indexWhere((DemoAccount a) => a.user.id == current.id);
+    if (index < 0) {
+      throw const AppException('Sign in again to change your password.');
+    }
+    final DemoAccount account = accounts[index];
+    if (account.password != currentPassword) {
+      throw const AppException('Your current password is incorrect.');
+    }
+    final String? problem =
+        validateNewPassword(newPassword, currentPassword: currentPassword);
+    if (problem != null) throw AppException(problem);
+    accounts[index] = DemoAccount(
+      email: account.email,
+      password: newPassword,
+      user: account.user,
+      isDemo: account.isDemo,
+    );
   }
 }

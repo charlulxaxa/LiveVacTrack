@@ -19,6 +19,7 @@ class ProfileView extends StatelessWidget {
     required this.onOfflineChanged,
     required this.onSignOut,
     super.key,
+    this.onChangePassword,
   });
 
   final AppUser user;
@@ -26,6 +27,7 @@ class ProfileView extends StatelessWidget {
   final bool offlineSimulated;
   final ValueChanged<bool> onOfflineChanged;
   final VoidCallback onSignOut;
+  final VoidCallback? onChangePassword;
 
   @override
   Widget build(BuildContext context) {
@@ -134,6 +136,15 @@ class ProfileView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.xl),
+        if (onChangePassword != null) ...<Widget>[
+          AppButton(
+            label: 'Change password',
+            onPressed: onChangePassword,
+            variant: AppButtonVariant.secondary,
+            icon: Icons.lock_reset_rounded,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
         AppButton(
           label: 'Sign out',
           onPressed: onSignOut,

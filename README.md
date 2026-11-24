@@ -165,7 +165,23 @@ own state and pass plain data/callbacks down.
    `seed-demo-data.js` copies the demo farmers, animals, vaccinations,
    permits, quarantines and checkpoint scans into Firestore, linked to the
    demo accounts' real UIDs. Both scripts are safe to re-run; add `--reset`
-   to `seed-demo-data.js` to overwrite those records with fresh copies. After that, the super admin creates further
+   to `seed-demo-data.js` to overwrite those records with fresh copies.
+
+   **Demo vs official data.** Demo accounts (`isDemo: true` on their
+   profile) read and write only the `demo_*` collections (`demo_farmers`,
+   `demo_animals`, ...) and show "Demo mode" on their profile. Every other
+   account is an official account and uses the plain collections
+   (`farmers`, `animals`, ...). `firestore.rules` enforces the split. The
+   demo admin's password is public, so it can only view the demo staff
+   list; accounts are created and managed by an official super admin.
+
+   Create an official super admin (no assigned area; oversees all areas).
+   The email must first be added to `isBootstrapAdmin()` in
+   `firestore.rules` and the rules deployed:
+   ```bash
+   node scripts/create-admin.js --email offadmin@gmail.com \
+     --password <password> --name "Official Admin"
+   ``` After that, the super admin creates further
    accounts from **Staff → Add staff account**; the app writes them straight
    to Firebase Auth and `users/{uid}` (no function needed). Those accounts are
    not listed under DEMO ACCOUNTS on the login screen.

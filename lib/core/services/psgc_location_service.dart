@@ -30,6 +30,18 @@ class AreaSelection {
   }
 }
 
+class PsgcRegion {
+  const PsgcRegion({required this.code, required this.name});
+
+  final String code;
+  final String name;
+
+  factory PsgcRegion.fromMap(Map<String, dynamic> map) => PsgcRegion(
+        code: (map['code'] as String?) ?? '',
+        name: (map['name'] as String?) ?? '',
+      );
+}
+
 class PsgcProvince {
   const PsgcProvince({
     required this.code,
@@ -103,6 +115,41 @@ class PsgcLocationService {
   static const Duration _ttl = Duration(days: 7);
 
   final http.Client _client;
+
+  /// PSGC barangay codes are 10 digits; the first 7 identify the city or
+  /// municipality, whose own code ends in 000 (e.g. barangay 0102801001 is in
+  /// 0102801000). Returns null for ids that are not PSGC barangay codes, such
+  /// as the demo areas.
+  static String? cityCodeForBarangay(String? barangayCode) {
+    if (barangayCode == null ||
+        !RegExp(r'^\d{10}$').hasMatch(barangayCode)) {
+      return null;
+    }
+    return '${barangayCode.substring(0, 7)}000';
+  }
+
+  Future<List<PsgcRegion>> fetchRegions() async {
+    final List<dynamic> data = await _getList('/regions', 'psgc:v2:regions');
+    return data
+        .whereType<Map<String, dynamic>>()
+        .map(PsgcRegion.fromMap)
+        .where((PsgcRegion r) => r.code.isNotEmpty)
+        .toList();
+  }
+
+  /// Every city and municipality in a region, including ones that are not
+  /// under a province (Metro Manila, Cotabato City, Isabela City).
+  Future<List<PsgcCity>> fetchRegionCities(String regionCode) async {
+    final List<dynamic> data = await _getList(
+      '/regions/$regionCode/cities-municipalities',
+      'psgc:v2:region-cities:$regionCode',
+    );
+    return data
+        .whereType<Map<String, dynamic>>()
+        .map(PsgcCity.fromMap)
+        .where((PsgcCity c) => c.code.isNotEmpty)
+        .toList();
+  }
 
   Future<List<PsgcProvince>> fetchProvinces() async {
     final List<dynamic> data =

@@ -20,10 +20,18 @@ import '../services/staff_account_service.dart';
 /// The role lives in the `users/{uid}` document, which the app reads at sign
 /// in. Custom claims cannot be set from a client; that needs the Admin SDK.
 class FirebaseStaffAccountService implements StaffAccountService {
-  FirebaseStaffAccountService(this._auth, this._firestore);
+  FirebaseStaffAccountService(
+    this._auth,
+    this._firestore, {
+    required this.viewerIsDemo,
+  });
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
+
+  /// The demo admin sees only demo accounts; an official admin sees only
+  /// official accounts.
+  final bool viewerIsDemo;
 
   static const String _provisioningAppName = 'staff-provisioning';
 
@@ -94,6 +102,8 @@ class FirebaseStaffAccountService implements StaffAccountService {
           'role': userRole.wire,
           'areaId': area,
           'areaName': areaName.trim().isEmpty ? area : areaName.trim(),
+          // Accounts created by an admin are always official accounts.
+          'isDemo': false,
           'createdAt': FieldValue.serverTimestamp(),
         },
       );
@@ -119,7 +129,8 @@ class FirebaseStaffAccountService implements StaffAccountService {
         .map((QuerySnapshot<Map<String, dynamic>> snapshot) {
       final List<StaffMember> members = snapshot.docs
           .where((QueryDocumentSnapshot<Map<String, dynamic>> doc) =>
-              doc.data()['removed'] != true)
+              doc.data()['removed'] != true &&
+              (doc.data()['isDemo'] == true) == viewerIsDemo)
           .map((QueryDocumentSnapshot<Map<String, dynamic>> doc) =>
               StaffMember.fromMap(doc.id, doc.data()))
           .where((StaffMember m) => m.role != UserRole.admin)

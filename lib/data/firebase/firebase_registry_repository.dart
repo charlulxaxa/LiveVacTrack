@@ -8,14 +8,15 @@ import '../models/farmer.dart';
 import '../repositories/registry_repository.dart';
 
 class FirebaseRegistryRepository implements RegistryRepository {
-  FirebaseRegistryRepository(this._firestore);
+  FirebaseRegistryRepository(this._firestore, this._paths);
 
   final FirebaseFirestore _firestore;
+  final FirestorePaths _paths;
 
   @override
   Stream<List<Farmer>> watchFarmers({int limit = AppConfig.pageSize}) {
     return _firestore
-        .collection(FirestorePaths.farmers)
+        .collection(_paths.farmers)
         .orderBy('fullName')
         .limit(limit)
         .snapshots()
@@ -28,7 +29,7 @@ class FirebaseRegistryRepository implements RegistryRepository {
   @override
   Stream<List<Animal>> watchAnimals({int limit = AppConfig.pageSize}) {
     return _firestore
-        .collection(FirestorePaths.animals)
+        .collection(_paths.animals)
         .orderBy('tagNo')
         .limit(limit)
         .snapshots()
@@ -41,7 +42,7 @@ class FirebaseRegistryRepository implements RegistryRepository {
   @override
   Stream<Animal?> watchAnimal(String id) {
     return _firestore
-        .collection(FirestorePaths.animals)
+        .collection(_paths.animals)
         .doc(id)
         .snapshots()
         .map((DocumentSnapshot<Map<String, dynamic>> doc) =>
@@ -52,7 +53,7 @@ class FirebaseRegistryRepository implements RegistryRepository {
   Future<void> addFarmer(Farmer farmer) async {
     try {
       await _firestore
-          .collection(FirestorePaths.farmers)
+          .collection(_paths.farmers)
           .doc(farmer.id)
           .set(farmer.toMap());
     } catch (error) {
@@ -64,7 +65,7 @@ class FirebaseRegistryRepository implements RegistryRepository {
   Future<void> addAnimal(Animal animal) async {
     try {
       await _firestore
-          .collection(FirestorePaths.animals)
+          .collection(_paths.animals)
           .doc(animal.id)
           .set(animal.toMap());
     } catch (error) {

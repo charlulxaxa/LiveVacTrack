@@ -1,10 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/config/app_config.dart';
 import '../data/models/animal.dart';
 import '../data/models/app_user.dart';
-import '../data/services/auth_service.dart';
 import '../data/models/farmer.dart';
 import '../state/app_providers.dart';
 import '../state/registry_providers.dart';
@@ -17,6 +15,7 @@ import 'animal_detail_page.dart';
 import 'animal_form_page.dart';
 import 'farmer_form_page.dart';
 import 'page_helpers.dart';
+import 'change_password_page.dart';
 
 class RegistryShellPage extends ConsumerWidget {
   const RegistryShellPage({required this.user, super.key});
@@ -94,12 +93,12 @@ class RegistryShellPage extends ConsumerWidget {
           selectedIcon: Icons.person_rounded,
           child: ProfileView(
             user: user,
-            demoMode: AppConfig.demoMode &&
-                DemoAuthService.isDemoUser(user.id),
+            demoMode: user.isDemo,
             offlineSimulated: ref.watch(offlineSimulatorProvider),
             onOfflineChanged: (bool value) =>
                 ref.read(offlineSimulatorProvider.notifier).setValue(value),
             onSignOut: () => ref.read(authServiceProvider).signOut(),
+            onChangePassword: () => ChangePasswordPage.open(context),
           ),
         ),
       ],

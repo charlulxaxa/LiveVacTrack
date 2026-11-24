@@ -1,9 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/config/app_config.dart';
 import '../data/models/app_user.dart';
-import '../data/services/auth_service.dart';
 import '../data/models/permit.dart';
 import '../data/models/quarantine.dart';
 import '../data/models/verification.dart';
@@ -18,6 +16,7 @@ import '../ui/organisms/quarantine_list_view.dart';
 import '../ui/organisms/verification_history_view.dart';
 import 'page_helpers.dart';
 import 'permit_verify_page.dart';
+import 'change_password_page.dart';
 
 class InspectorShellPage extends ConsumerWidget {
   const InspectorShellPage({required this.user, super.key});
@@ -118,12 +117,12 @@ class InspectorShellPage extends ConsumerWidget {
           selectedIcon: Icons.person_rounded,
           child: ProfileView(
             user: user,
-            demoMode: AppConfig.demoMode &&
-                DemoAuthService.isDemoUser(user.id),
+            demoMode: user.isDemo,
             offlineSimulated: ref.watch(offlineSimulatorProvider),
             onOfflineChanged: (bool value) =>
                 ref.read(offlineSimulatorProvider.notifier).setValue(value),
             onSignOut: () => ref.read(authServiceProvider).signOut(),
+            onChangePassword: () => ChangePasswordPage.open(context),
           ),
         ),
       ],
