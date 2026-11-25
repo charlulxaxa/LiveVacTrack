@@ -2,16 +2,16 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
-import '../core/errors/error_mapper.dart';
-import '../core/theme/app_spacing.dart';
-import '../data/enums/vax_status.dart';
-import '../data/models/animal.dart';
-import '../data/models/app_user.dart';
-import '../data/models/farmer.dart';
-import '../state/registry_providers.dart';
-import '../state/repository_providers.dart';
-import '../ui/atoms/app_spinner.dart';
-import '../ui/organisms/animal_form.dart';
+import '../../core/errors/error_mapper.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../data/enums/vax_status.dart';
+import '../../data/models/animal.dart';
+import '../../data/models/app_user.dart';
+import '../../data/models/farmer.dart';
+import '../../state/registry_providers.dart';
+import '../../state/repository_providers.dart';
+import '../atoms/app_spinner.dart';
+import '../organisms/animal_form.dart';
 
 class AnimalFormPage extends ConsumerWidget {
   const AnimalFormPage({required this.user, super.key});

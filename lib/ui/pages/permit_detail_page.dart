@@ -1,16 +1,16 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/errors/error_mapper.dart';
-import '../core/theme/app_spacing.dart';
-import '../data/models/animal.dart';
-import '../data/models/permit.dart';
-import '../state/permit_providers.dart';
-import '../state/registry_providers.dart';
-import '../ui/atoms/app_spinner.dart';
-import '../ui/atoms/app_text.dart';
-import '../ui/organisms/permit_detail_view.dart';
-import '../ui/templates/detail_template.dart';
+import '../../core/errors/error_mapper.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../data/models/animal.dart';
+import '../../data/models/permit.dart';
+import '../../state/permit_providers.dart';
+import '../../state/registry_providers.dart';
+import '../atoms/app_spinner.dart';
+import '../atoms/app_text.dart';
+import '../organisms/permit_detail_view.dart';
+import '../templates/detail_template.dart';
 
 class PermitDetailPage extends ConsumerWidget {
   const PermitDetailPage({required this.permitId, super.key});

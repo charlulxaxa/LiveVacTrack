@@ -16,6 +16,7 @@ class Permit {
     required this.validUntil,
     this.issuedAt,
     this.createdAt,
+    this.originAreaId,
   });
 
   final String id;
@@ -31,6 +32,18 @@ class Permit {
   final DateTime validUntil;
   final DateTime? issuedAt;
   final DateTime? createdAt;
+
+  /// Barangay the animal is moving from (PSGC code or demo area id). Can
+  /// differ from [areaId], the barangay the animal is registered in. Missing
+  /// on permits issued before it was recorded.
+  final String? originAreaId;
+
+  /// Every barangay this permit is tied to. A quarantine covering either the
+  /// animal's home or the origin applies to the permit.
+  List<String> get quarantineAreaIds => <String>[
+        areaId,
+        if (originAreaId != null && originAreaId!.isNotEmpty) originAreaId!,
+      ];
 
   /// Expiry is derived so a permit that passes its date never looks valid.
   PermitStatus effectiveStatus([DateTime? now]) {
@@ -61,6 +74,7 @@ class Permit {
       validUntil: validUntil ?? this.validUntil,
       issuedAt: issuedAt ?? this.issuedAt,
       createdAt: createdAt,
+      originAreaId: originAreaId,
     );
   }
 
@@ -79,6 +93,7 @@ class Permit {
       validUntil: dateFromValue(map['validUntil']) ?? DateTime.now(),
       issuedAt: dateFromValue(map['issuedAt']),
       createdAt: dateFromValue(map['createdAt']),
+      originAreaId: map['originAreaId'] as String?,
     );
   }
 
@@ -95,5 +110,6 @@ class Permit {
         'validUntil': validUntil,
         'issuedAt': issuedAt ?? DateTime.now(),
         'createdAt': createdAt ?? DateTime.now(),
+        if (originAreaId != null) 'originAreaId': originAreaId,
       };
 }

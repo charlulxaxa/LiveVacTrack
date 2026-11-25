@@ -1,15 +1,15 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/models/app_user.dart';
-import '../data/models/staff_member.dart';
-import '../state/app_providers.dart';
-import '../state/repository_providers.dart';
-import '../state/staff_providers.dart';
-import '../ui/molecules/confirm_dialog.dart';
-import '../ui/organisms/app_shell.dart';
-import '../ui/organisms/profile_view.dart';
-import '../ui/organisms/staff_account_view.dart';
+import '../../data/models/app_user.dart';
+import '../../data/models/staff_member.dart';
+import '../../state/app_providers.dart';
+import '../../state/repository_providers.dart';
+import '../../state/staff_providers.dart';
+import '../molecules/confirm_dialog.dart';
+import '../organisms/app_shell.dart';
+import '../organisms/profile_view.dart';
+import '../organisms/staff_account_view.dart';
 import 'page_helpers.dart';
 import 'staff_account_form_page.dart';
 import 'change_password_page.dart';

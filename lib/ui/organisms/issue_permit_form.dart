@@ -18,6 +18,7 @@ import '../molecules/info_row.dart';
 import '../molecules/nationwide_location_picker.dart';
 import '../molecules/origin_barangay_picker.dart';
 import '../templates/form_template.dart';
+import '../../core/utils/quarantine_scope.dart';
 
 class IssuePermitForm extends StatefulWidget {
   const IssuePermitForm({
@@ -33,12 +34,15 @@ class IssuePermitForm extends StatefulWidget {
   /// of that city or municipality.
   final String? assignedAreaId;
   final List<Animal> animals;
+
+  /// Municipality keys under quarantine (QuarantineScope.municipalityOf).
   final Set<String> quarantinedAreas;
   final Future<Permit> Function({
     required Animal animal,
     required String origin,
     required String destination,
     required DateTime travelDate,
+    String? originAreaId,
   }) onIssue;
   final void Function(Permit permit) onViewPermit;
 
@@ -59,8 +63,14 @@ class _IssuePermitFormState extends State<IssuePermitForm> {
 
   List<Animal> get _eligible => widget.animals.where((Animal animal) {
         return animal.isVaccinatedFor(_travelDate) &&
-            !widget.quarantinedAreas.contains(animal.areaId);
+            !widget.quarantinedAreas
+                .contains(QuarantineScope.municipalityOf(animal.areaId));
       }).toList();
+
+  bool get _originQuarantined =>
+      _originId != null &&
+      widget.quarantinedAreas
+          .contains(QuarantineScope.municipalityOf(_originId!));
 
   Animal? get _selected {
     for (final Animal animal in _eligible) {
@@ -77,6 +87,12 @@ class _IssuePermitFormState extends State<IssuePermitForm> {
       setState(() => _error = 'Select an eligible animal.');
       return;
     }
+    if (_originQuarantined) {
+      setState(() => _error = 'The origin is in a municipality under an '
+          'active quarantine. Permits cannot be issued from there until the '
+          'quarantine is lifted.');
+      return;
+    }
     setState(() {
       _submitting = true;
       _error = null;
@@ -87,6 +103,7 @@ class _IssuePermitFormState extends State<IssuePermitForm> {
         origin: _originLabel ?? '',
         destination: _destination!.fullName,
         travelDate: _travelDate,
+        originAreaId: _originId,
       );
       if (mounted) setState(() => _issued = permit);
     } catch (error) {
@@ -127,7 +144,7 @@ class _IssuePermitFormState extends State<IssuePermitForm> {
       child: FormTemplate(
         title: 'Issue a movement permit',
         subtitle:
-            'Cloud Functions re-checks vaccination and quarantine before signing.',
+            'Vaccination and quarantine are re-checked against the latest records before the permit is issued.',
         fields: <Widget>[
           if (_error != null) ...<Widget>[
             ErrorBanner(message: _error!),
@@ -152,7 +169,8 @@ class _IssuePermitFormState extends State<IssuePermitForm> {
                   Expanded(
                     child: AppText(
                       'Active quarantine: animals from '
-                      '${widget.quarantinedAreas.length} area(s) are blocked '
+                      '${widget.quarantinedAreas.length} municipality/city '
+                      'area(s) are blocked '
                       'from new permits.',
                       variant: AppTextVariant.caption,
                       color: AppColors.danger,
@@ -215,8 +233,20 @@ class _IssuePermitFormState extends State<IssuePermitForm> {
               onChanged: (String? id, String? label) => setState(() {
                 _originId = id;
                 _originLabel = label;
+                _error = null;
               }),
             ),
+            if (_originQuarantined) ...<Widget>[
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                'This origin is in a municipality under an active '
+                'quarantine. No permits can be issued from here until it is '
+                'lifted.',
+                variant: AppTextVariant.caption,
+                color: AppColors.danger,
+                fontWeight: FontWeight.w600,
+              ),
+            ],
             const SizedBox(height: AppSpacing.xl),
             AppText('Destination', variant: AppTextVariant.title),
             const SizedBox(height: AppSpacing.sm),
@@ -227,8 +257,8 @@ class _IssuePermitFormState extends State<IssuePermitForm> {
             ),
             const SizedBox(height: AppSpacing.md),
             AppText(
-              'The signed code is created on the server. It never leaves the '
-              'Functions environment.',
+              'Issuing needs a connection. The permit gets a unique signed code '
+              'that checkpoints match against the permit record.',
               variant: AppTextVariant.caption,
             ),
           ],

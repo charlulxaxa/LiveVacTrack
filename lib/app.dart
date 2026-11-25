@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../core/config/app_config.dart';
 import '../core/theme/app_theme.dart';
-import 'pages/auth_gate.dart';
+import 'ui/pages/auth_gate.dart';
 
 class LiveVacTrackApp extends StatelessWidget {
   const LiveVacTrackApp({super.key});

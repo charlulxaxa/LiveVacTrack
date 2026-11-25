@@ -103,8 +103,8 @@ lib/
     firebase/      Auth/Firestore/Functions implementations
     services/      AuthService and staff-account contracts
   state/           Riverpod providers (repositories, session, lists)
-  pages/           screens that wire providers to organisms
   ui/
+    pages/         screens that wire providers to organisms
     atoms/         text, buttons, fields, badges, QR view
     molecules/     list tiles, banners, dialogs, result panel, location picker
     organisms/     login form, shells, registry/permit/quarantine views
@@ -115,8 +115,9 @@ firestore.indexes.json
 firebase.json
 ```
 
-Atomic-design rule: nothing under `lib/ui/` imports Firebase or Riverpod. Pages
-own state and pass plain data/callbacks down.
+Atomic-design rule: atoms, molecules, organisms and templates under `lib/ui/`
+do not import Firebase or Riverpod. Pages (`lib/ui/pages/`) own state, wire the
+providers, and pass plain data/callbacks down.
 
 ## Live Firebase setup
 
@@ -170,7 +171,12 @@ own state and pass plain data/callbacks down.
    `createStaffAccount` callable function, which is restricted to those two
    roles. To create an account from a terminal instead, see
    `scripts/provision-user.js` (requires a service account key).
-   **Spark (free) plan:** no Cloud Functions are needed for accounts. Deploy
+   **Spark (free) plan:** the app needs no Cloud Functions. Staff accounts,
+   vaccination status, permit issuing and verification, and quarantine
+   declare/activate/lift (including revoking the area's permits) all run in
+   the app against Firestore. A permit's signed code is a random 256-bit
+   token stored on the permit; a scan is genuine when it matches. Do not also
+   deploy `functions/`: its triggers would repeat that work. Deploy
    the rules and indexes, then create the first official super admin (no
    assigned area; oversees all areas). Its email must be listed in
    `isBootstrapAdmin()` in `firestore.rules` before the rules are deployed:

@@ -1,19 +1,19 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/errors/error_mapper.dart';
-import '../core/theme/app_spacing.dart';
-import '../data/models/animal.dart';
-import '../data/models/vaccination.dart';
-import '../data/models/verification.dart';
-import '../state/permit_providers.dart';
-import '../state/quarantine_providers.dart';
-import '../state/registry_providers.dart';
-import '../state/vaccination_providers.dart';
-import '../ui/atoms/app_spinner.dart';
-import '../ui/atoms/app_text.dart';
-import '../ui/organisms/animal_detail_view.dart';
-import '../ui/templates/detail_template.dart';
+import '../../core/errors/error_mapper.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../data/models/animal.dart';
+import '../../data/models/vaccination.dart';
+import '../../data/models/verification.dart';
+import '../../state/permit_providers.dart';
+import '../../state/quarantine_providers.dart';
+import '../../state/registry_providers.dart';
+import '../../state/vaccination_providers.dart';
+import '../atoms/app_spinner.dart';
+import '../atoms/app_text.dart';
+import '../organisms/animal_detail_view.dart';
+import '../templates/detail_template.dart';
 
 class AnimalDetailPage extends ConsumerWidget {
   const AnimalDetailPage({required this.animalId, super.key});
@@ -52,7 +52,7 @@ class AnimalDetailPage extends ConsumerWidget {
         animal: animal,
         vaccinations: vaccinationsAsync.value ?? <Vaccination>[],
         loadingVaccinations: vaccinationsAsync.isLoading,
-        areaQuarantined: quarantinedAreas.contains(animal.areaId),
+        areaQuarantined: isAreaQuarantined(quarantinedAreas, animal.areaId),
         verifications: verificationsAsync.value ?? <Verification>[],
         loadingVerifications: verificationsAsync.isLoading,
       ),

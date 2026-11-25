@@ -11,6 +11,7 @@ import '../molecules/error_banner.dart';
 import '../molecules/quarantine_tile.dart';
 import '../molecules/status_filter_bar.dart';
 import '../templates/list_template.dart';
+import '../../core/utils/quarantine_scope.dart';
 
 class QuarantineListView extends StatefulWidget {
   const QuarantineListView({
@@ -120,7 +121,10 @@ class _QuarantineListViewState extends State<QuarantineListView> {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: AppText(
-                      'Permits in quarantined areas are revoked and new permits are blocked.',
+                      'A quarantine covers its whole municipality/city: '
+                      'permits issued there in the last '
+                      '${QuarantineScope.revokeWindowDays} days are revoked '
+                      'and new permits are blocked.',
                       variant: AppTextVariant.caption,
                       color: AppColors.danger,
                     ),

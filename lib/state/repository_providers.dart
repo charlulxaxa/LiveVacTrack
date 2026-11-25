@@ -1,12 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/services/psgc_location_service.dart';
 import '../data/demo/demo_store.dart';
 import '../data/firebase/firebase_auth_service.dart';
-import '../data/firebase/firebase_functions_service.dart';
 import '../data/firebase/firebase_permit_repository.dart';
 import '../data/firebase/firebase_quarantine_repository.dart';
 import '../data/firebase/firebase_registry_repository.dart';
@@ -53,10 +51,7 @@ final Provider<PermitRepository> permitRepositoryProvider =
   if (ref.watch(demoModeProvider)) {
     return DemoPermitRepository(ref.watch(demoStoreProvider));
   }
-  return FirebasePermitRepository(
-    FirebaseFirestore.instance,
-    FirebaseFunctionsService(FirebaseFunctions.instance),
-  );
+  return FirebasePermitRepository(FirebaseFirestore.instance);
 });
 
 final Provider<QuarantineRepository> quarantineRepositoryProvider =
@@ -64,10 +59,7 @@ final Provider<QuarantineRepository> quarantineRepositoryProvider =
   if (ref.watch(demoModeProvider)) {
     return DemoQuarantineRepository(ref.watch(demoStoreProvider));
   }
-  return FirebaseQuarantineRepository(
-    FirebaseFirestore.instance,
-    FirebaseFunctionsService(FirebaseFunctions.instance),
-  );
+  return FirebaseQuarantineRepository(FirebaseFirestore.instance);
 });
 
 final Provider<StaffAccountService> staffAccountServiceProvider =

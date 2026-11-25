@@ -23,12 +23,15 @@ abstract class PermitRepository {
   /// Checkpoint scans for one animal, newest first.
   Stream<List<Verification>> watchVerificationsForAnimal(String animalId);
 
+  /// [originAreaId] is the barangay the animal moves from. A quarantine on
+  /// its municipality blocks the permit, as one on the animal's home does.
   Future<Permit> issuePermit({
     required Animal animal,
     required String origin,
     required String destination,
     required DateTime travelDate,
     required AppUser clerk,
+    String? originAreaId,
   });
 
   Future<VerificationOutcome> verifyPermit({
@@ -68,6 +71,7 @@ class DemoPermitRepository implements PermitRepository {
     required String destination,
     required DateTime travelDate,
     required AppUser clerk,
+    String? originAreaId,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 600));
 
@@ -81,10 +85,20 @@ class DemoPermitRepository implements PermitRepository {
       );
     }
 
-    final Quarantine? quarantine = _store.activeQuarantineFor(animal.areaId);
-    if (quarantine != null) {
+    final Quarantine? homeQuarantine = _store.activeQuarantineFor(animal.areaId);
+    if (homeQuarantine != null) {
       throw AppException(
-        '${animal.barangay} is under an active quarantine. New permits are blocked.',
+        '${animal.barangay} is under an active quarantine '
+        '(${homeQuarantine.areaName}). New permits are blocked.',
+      );
+    }
+    final Quarantine? originQuarantine = originAreaId == null
+        ? null
+        : _store.activeQuarantineFor(originAreaId);
+    if (originQuarantine != null) {
+      throw AppException(
+        'The origin ${origin.trim()} is under an active quarantine '
+        '(${originQuarantine.areaName}). New permits are blocked.',
       );
     }
 
@@ -104,6 +118,7 @@ class DemoPermitRepository implements PermitRepository {
       validUntil: minDate(endOfDay(travelDate), endOfDay(until))!,
       issuedAt: DateTime.now(),
       createdAt: DateTime.now(),
+      originAreaId: originAreaId,
     );
     _store.addPermit(permit);
     return permit;
