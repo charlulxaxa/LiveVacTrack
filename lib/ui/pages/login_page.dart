@@ -1,13 +1,13 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/config/app_config.dart';
-import '../core/errors/error_mapper.dart';
-import '../data/services/auth_service.dart';
-import '../state/app_providers.dart';
-import '../state/repository_providers.dart';
-import '../ui/organisms/login_form.dart';
-import '../ui/templates/auth_template.dart';
+import '../../core/config/app_config.dart';
+import '../../core/errors/error_mapper.dart';
+import '../../data/services/auth_service.dart';
+import '../../state/app_providers.dart';
+import '../../state/repository_providers.dart';
+import '../organisms/login_form.dart';
+import '../templates/auth_template.dart';
 
 class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});

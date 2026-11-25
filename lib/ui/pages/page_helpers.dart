@@ -1,12 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/errors/error_mapper.dart';
-import '../data/models/animal.dart';
-import '../data/models/farmer.dart';
-import '../ui/atoms/app_text.dart';
-import '../ui/molecules/info_row.dart';
-import '../ui/molecules/section_header.dart';
+import '../../core/errors/error_mapper.dart';
+import '../../data/models/animal.dart';
+import '../../data/models/farmer.dart';
+import '../atoms/app_text.dart';
+import '../molecules/info_row.dart';
+import '../molecules/section_header.dart';
 
 String? errorTextFor(AsyncValue<dynamic> value) {
   if (!value.hasError) return null;

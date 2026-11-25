@@ -1,16 +1,16 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/models/animal.dart';
-import '../data/models/app_user.dart';
-import '../data/models/farmer.dart';
-import '../state/app_providers.dart';
-import '../state/registry_providers.dart';
-import '../state/repository_providers.dart';
-import '../ui/organisms/animal_registry_view.dart';
-import '../ui/organisms/app_shell.dart';
-import '../ui/organisms/farmer_registry_view.dart';
-import '../ui/organisms/profile_view.dart';
+import '../../data/models/animal.dart';
+import '../../data/models/app_user.dart';
+import '../../data/models/farmer.dart';
+import '../../state/app_providers.dart';
+import '../../state/registry_providers.dart';
+import '../../state/repository_providers.dart';
+import '../organisms/animal_registry_view.dart';
+import '../organisms/app_shell.dart';
+import '../organisms/farmer_registry_view.dart';
+import '../organisms/profile_view.dart';
 import 'animal_detail_page.dart';
 import 'animal_form_page.dart';
 import 'farmer_form_page.dart';

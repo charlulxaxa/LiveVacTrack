@@ -1,8 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../state/repository_providers.dart';
-import '../ui/organisms/staff_account_form.dart';
+import '../../state/repository_providers.dart';
+import '../organisms/staff_account_form.dart';
 
 class StaffAccountFormPage extends ConsumerWidget {
   const StaffAccountFormPage({super.key});

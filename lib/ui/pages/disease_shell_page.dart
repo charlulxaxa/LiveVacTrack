@@ -1,15 +1,15 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/models/app_user.dart';
-import '../data/models/quarantine.dart';
-import '../state/app_providers.dart';
-import '../state/quarantine_providers.dart';
-import '../state/repository_providers.dart';
-import '../ui/organisms/app_shell.dart';
-import '../ui/organisms/declare_quarantine_form.dart';
-import '../ui/organisms/profile_view.dart';
-import '../ui/organisms/quarantine_list_view.dart';
+import '../../data/models/app_user.dart';
+import '../../data/models/quarantine.dart';
+import '../../state/app_providers.dart';
+import '../../state/quarantine_providers.dart';
+import '../../state/repository_providers.dart';
+import '../organisms/app_shell.dart';
+import '../organisms/declare_quarantine_form.dart';
+import '../organisms/profile_view.dart';
+import '../organisms/quarantine_list_view.dart';
 import 'page_helpers.dart';
 import 'change_password_page.dart';
 

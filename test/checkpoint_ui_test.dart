@@ -9,7 +9,7 @@ import 'package:livevactrack/data/enums/scan_result.dart';
 import 'package:livevactrack/data/enums/user_role.dart';
 import 'package:livevactrack/data/models/app_user.dart';
 import 'package:livevactrack/data/models/verification.dart';
-import 'package:livevactrack/pages/permit_verify_page.dart';
+import 'package:livevactrack/ui/pages/permit_verify_page.dart';
 import 'package:livevactrack/ui/atoms/app_skeleton.dart';
 import 'package:livevactrack/ui/molecules/scan_success_dialog.dart';
 import 'package:livevactrack/ui/organisms/farmer_registry_view.dart';

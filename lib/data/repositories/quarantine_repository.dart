@@ -42,12 +42,16 @@ class DemoQuarantineRepository implements QuarantineRepository {
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 500));
 
-    if (_store.activeQuarantineFor(areaId) != null) {
-      throw AppException('$areaName already has an active quarantine.');
+    final Quarantine? existing = _store.activeQuarantineFor(areaId);
+    if (existing != null) {
+      throw AppException(
+        'This municipality is already under quarantine '
+        '(${existing.areaName}).',
+      );
     }
 
     final DateTime now = DateTime.now();
-    final int revoked = _store.revokePermitsForArea(areaId);
+    final int revoked = _store.revokePermitsForArea(areaId, quarantineAt: now);
     _store.addQuarantine(
       Quarantine(
         id: 'QTN-${now.millisecondsSinceEpoch}',

@@ -11,6 +11,7 @@ import '../models/quarantine.dart';
 import '../models/vaccination.dart';
 import '../models/verification.dart';
 import 'demo_seed.dart';
+import '../../core/utils/quarantine_scope.dart';
 
 /// In-memory stand-in for Firestore used by demo mode. Streams behave like
 /// Firestore snapshots: every listener receives the current value and then all
@@ -154,11 +155,19 @@ class DemoStore {
     _notify();
   }
 
-  int revokePermitsForArea(String areaId) {
+  /// Revokes the permits a quarantine on [areaId] starting at [quarantineAt]
+  /// covers: same municipality, issued in the last
+  /// [QuarantineScope.revokeWindowDays] days.
+  int revokePermitsForArea(String areaId, {DateTime? quarantineAt}) {
+    final DateTime at = quarantineAt ?? DateTime.now();
     int count = 0;
     for (int i = 0; i < _permits.length; i++) {
       final Permit permit = _permits[i];
-      if (permit.areaId == areaId && permit.status != PermitStatus.revoked) {
+      if (QuarantineScope.revokes(
+        permit,
+        quarantineAreaId: areaId,
+        quarantineAt: at,
+      )) {
         _permits[i] = permit.copyWith(status: PermitStatus.revoked);
         count++;
       }
@@ -175,9 +184,13 @@ class DemoStore {
         return List<Quarantine>.unmodifiable(rows);
       });
 
+  /// The active quarantine covering [areaId]'s municipality, if any.
   Quarantine? activeQuarantineFor(String areaId) {
     for (final Quarantine quarantine in _quarantines) {
-      if (quarantine.areaId == areaId && quarantine.isActive) return quarantine;
+      if (quarantine.isActive &&
+          QuarantineScope.sameMunicipality(quarantine.areaId, areaId)) {
+        return quarantine;
+      }
     }
     return null;
   }
@@ -208,7 +221,7 @@ class DemoStore {
             declaredBy: q.declaredBy,
             sourceMessageId: q.sourceMessageId,
           );
-          revokePermitsForArea(q.areaId);
+          revokePermitsForArea(q.areaId, quarantineAt: DateTime.now());
           _notify();
         }
         break;

@@ -1,17 +1,17 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
-import '../core/errors/app_exception.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_spacing.dart';
-import '../data/enums/scan_result.dart';
-import '../data/models/verification.dart';
-import '../ui/atoms/app_button.dart';
-import '../ui/atoms/app_spinner.dart';
-import '../ui/atoms/app_text.dart';
-import '../ui/molecules/error_banner.dart';
-import '../ui/molecules/verification_result_panel.dart';
-import '../ui/status_styles.dart';
+import '../../core/errors/app_exception.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../data/enums/scan_result.dart';
+import '../../data/models/verification.dart';
+import '../atoms/app_button.dart';
+import '../atoms/app_spinner.dart';
+import '../atoms/app_text.dart';
+import '../molecules/error_banner.dart';
+import '../molecules/verification_result_panel.dart';
+import '../status_styles.dart';
 
 typedef PermitVerifier = Future<VerificationOutcome> Function({
   required String permitId,

@@ -2,10 +2,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
-import '../data/models/app_user.dart';
-import '../data/models/farmer.dart';
-import '../state/repository_providers.dart';
-import '../ui/organisms/farmer_form.dart';
+import '../../data/models/app_user.dart';
+import '../../data/models/farmer.dart';
+import '../../state/repository_providers.dart';
+import '../organisms/farmer_form.dart';
 
 class FarmerFormPage extends ConsumerWidget {
   const FarmerFormPage({required this.user, super.key});

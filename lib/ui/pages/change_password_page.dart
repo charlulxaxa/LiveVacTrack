@@ -1,8 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../state/repository_providers.dart';
-import '../ui/organisms/change_password_form.dart';
+import '../../state/repository_providers.dart';
+import '../organisms/change_password_form.dart';
 
 class ChangePasswordPage extends ConsumerWidget {
   const ChangePasswordPage({super.key});

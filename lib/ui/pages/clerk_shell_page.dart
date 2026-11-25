@@ -1,20 +1,20 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/models/animal.dart';
-import '../data/models/app_user.dart';
-import '../data/models/permit.dart';
-import '../data/models/quarantine.dart';
-import '../state/app_providers.dart';
-import '../state/permit_providers.dart';
-import '../state/quarantine_providers.dart';
-import '../state/registry_providers.dart';
-import '../state/repository_providers.dart';
-import '../ui/organisms/app_shell.dart';
-import '../ui/organisms/issue_permit_form.dart';
-import '../ui/organisms/permit_list_view.dart';
-import '../ui/organisms/profile_view.dart';
-import '../ui/organisms/quarantine_list_view.dart';
+import '../../data/models/animal.dart';
+import '../../data/models/app_user.dart';
+import '../../data/models/permit.dart';
+import '../../data/models/quarantine.dart';
+import '../../state/app_providers.dart';
+import '../../state/permit_providers.dart';
+import '../../state/quarantine_providers.dart';
+import '../../state/registry_providers.dart';
+import '../../state/repository_providers.dart';
+import '../organisms/app_shell.dart';
+import '../organisms/issue_permit_form.dart';
+import '../organisms/permit_list_view.dart';
+import '../organisms/profile_view.dart';
+import '../organisms/quarantine_list_view.dart';
 import 'page_helpers.dart';
 import 'permit_detail_page.dart';
 import 'change_password_page.dart';
@@ -77,6 +77,7 @@ class ClerkShellPage extends ConsumerWidget {
               required String origin,
               required String destination,
               required DateTime travelDate,
+              String? originAreaId,
             }) {
               return ref.read(permitRepositoryProvider).issuePermit(
                     animal: animal,
@@ -84,6 +85,7 @@ class ClerkShellPage extends ConsumerWidget {
                     destination: destination,
                     travelDate: travelDate,
                     clerk: user,
+                    originAreaId: originAreaId,
                   );
             },
             onViewPermit: (Permit permit) => Navigator.of(context).push(

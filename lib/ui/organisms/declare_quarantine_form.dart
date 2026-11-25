@@ -13,6 +13,7 @@ import '../molecules/error_banner.dart';
 import '../molecules/location_picker.dart';
 import '../molecules/quarantine_tile.dart';
 import '../templates/form_template.dart';
+import '../../core/utils/quarantine_scope.dart';
 
 class DeclareQuarantineForm extends StatefulWidget {
   const DeclareQuarantineForm({
@@ -62,8 +63,9 @@ class _DeclareQuarantineFormState extends State<DeclareQuarantineForm> {
       return;
     }
     final String areaName = _areaName ?? AppConfig.areaName(areaId);
-    if (widget.activeAreas.contains(areaId)) {
-      setState(() => _error = 'That area already has an active quarantine.');
+    if (widget.activeAreas.contains(QuarantineScope.municipalityOf(areaId))) {
+      setState(() => _error =
+          'This municipality/city is already under an active quarantine.');
       return;
     }
 
@@ -71,7 +73,10 @@ class _DeclareQuarantineFormState extends State<DeclareQuarantineForm> {
       context,
       title: 'Declare quarantine?',
       message:
-          'All issued permits in $areaName will be revoked and new permits blocked. This is broadcast to every staff screen.',
+          'The quarantine covers the whole municipality/city of $areaName. '
+          'Permits issued there in the last ${QuarantineScope.revokeWindowDays} '
+          'days will be revoked, and new permits there will be blocked. This '
+          'is broadcast to every staff screen.',
       confirmLabel: 'Declare',
       destructive: true,
     );
@@ -123,7 +128,9 @@ class _DeclareQuarantineFormState extends State<DeclareQuarantineForm> {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 AppText(
-                  '$_revokedCount permit(s) revoked. New permits in this area are blocked.',
+                  '$_revokedCount permit(s) issued in the last '
+                  '${QuarantineScope.revokeWindowDays} days revoked. New '
+                  'permits in this municipality/city are blocked.',
                   variant: AppTextVariant.body,
                   textAlign: TextAlign.center,
                 ),
@@ -202,8 +209,10 @@ class _DeclareQuarantineFormState extends State<DeclareQuarantineForm> {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: AppText(
-                    'This immediately revokes every issued permit in the area. '
-                    'Checkpoint scans will show REVOKED.',
+                    'This covers the whole municipality/city and immediately '
+                    'revokes permits issued there in the last '
+                    '${QuarantineScope.revokeWindowDays} days. Checkpoint '
+                    'scans of those permits will show REVOKED.',
                     variant: AppTextVariant.caption,
                     color: AppColors.warning,
                   ),
